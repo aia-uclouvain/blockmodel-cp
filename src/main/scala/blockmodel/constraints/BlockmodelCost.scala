@@ -1,6 +1,7 @@
 package blockmodel.constraints
 
 import oscar.algo.reversible.{ReversibleInt, ReversibleSparseSet}
+import oscar.algo.search
 import oscar.cp._
 import oscar.cp.core._
 import oscar.cp.core.delta.DeltaIntVar
@@ -31,151 +32,60 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
                      cost: Array[Array[CPIntVar]], totalCost: CPIntVar)
   extends Constraint(C(0).store, "BlockmodelCost") {
 
-  protected val n: Int = X.length // the number of vertices in the graph
-  protected val k: Int = M.length // the number of positions in the model
+  private val n = X.length // the number of vertices in the graph
+  private val k = M.length // the number of positions in the model
 
-  // this is for the Delta objects associated with the different blockmodel.constraints on the violation between two blocks
-  protected val CDeltas: Array[DeltaIntVar] = Array.ofDim[DeltaIntVar](n)
+  // this is for the Delta objects associated with the different constraints on the violation between two blocks
+  private val costsDeltas = Array.ofDim[DeltaIntVar](k, k)
 
-  protected val unboundVertices = new ReversibleSparseSet(s, 0, n-1)
+  private val unboundVertices = new ReversibleSparseSet(s, 0, n-1)
 
-  protected val nb1Block: Array[Array[ReversibleInt]] = Array.fill(k,k)(new ReversibleInt(s, 0))
-  protected val nb0Block: Array[Array[ReversibleInt]] = Array.fill(k,k)(new ReversibleInt(s, 0))
+  private val nb1Bound = Array.fill(k,k)(new ReversibleInt(s, 0))
+  private val nb0Bound = Array.fill(k,k)(new ReversibleInt(s, 0))
+  private val nb1UnboundCol = Array.fill(k,n)(new ReversibleInt(s, 0))
+  private val nb0UnboundCol = Array.fill(k,n)(new ReversibleInt(s, 0))
+  private val nb1UnboundRow = Array.fill(n,k)(new ReversibleInt(s, 0))
+  private val nb0UnboundRow = Array.fill(n,k)(new ReversibleInt(s, 0))
 
-  protected val lbTotalCost = new ReversibleInt(s, 0)
+  private val delta = Array.fill(n,k)(new ReversibleInt(s, 0))
 
-  protected val nb1Col: Array[Array[ReversibleInt]] = Array.fill(k,n)(new ReversibleInt(s, 0))
-  protected val nb0Col: Array[Array[ReversibleInt]] = Array.fill(k,n)(new ReversibleInt(s, 0))
+  def delta(i: Int, r: Int): Int = delta(i)(r).value
 
-  protected val nb1Row: Array[Array[ReversibleInt]] = Array.fill(n,k)(new ReversibleInt(s, 0))
-  protected val nb0Row: Array[Array[ReversibleInt]] = Array.fill(n,k)(new ReversibleInt(s, 0))
-
-  protected val minSize: Array[ReversibleInt] = Array.fill(k)(new ReversibleInt(s, 0))
-  protected val maxSize: Array[ReversibleInt] = Array.fill(k)(new ReversibleInt(s, n))
-
-  // a lower bound on the cost of block c,d given current variables nb{1,0}*
-  @inline def lbCost(c: Int, d: Int): Int = {
-    if (M(c)(d) isBoundTo 1) nb0Block(c)(d)
-    else if (M(c)(d) isBoundTo 0) nb1Block(c)(d)
-    else min(nb0Block(c)(d), nb1Block(c)(d))
-  }
-
-  // a lower bound on the added cost to block c,d of assinging vertex i to cluster x
-  // it is accurate only for vertices i in unboundVertices
-  def lbAssignment(i: Int, x: Int, c: Int, d: Int): Int = {
-    if (x == c) {
-      if (x == d) { // x == c == d
-        if (M(c)(d) isBoundTo 1)
-          nb0Col(c)(i).value + nb0Row(i)(c).value + (if (X(i)(i)) 0 else 1)
-        else if (M(c)(d) isBoundTo 0)
-          nb1Col(c)(i).value + nb1Row(i)(c).value + (if (X(i)(i)) 1 else 0)
-        else min(
-          nb0Col(c)(i).value + nb0Row(i)(c).value + (if (X(i)(i)) 0 else 1),
-          nb1Col(c)(i).value + nb1Row(i)(c).value + (if (X(i)(i)) 1 else 0)
-        )
-      } else { // x == c, x != d
-        if (M(c)(d) isBoundTo 1) nb0Row(i)(d)
-        else if (M(c)(d) isBoundTo 0) nb1Row(i)(d)
-        else min(nb0Row(i)(d), nb1Row(i)(d))
-      }
-    } else {
-      if (x == d) { // x != c, x == d
-        if (M(c)(d) isBoundTo 1) nb0Col(c)(i)
-        else if (M(c)(d) isBoundTo 0) nb1Col(c)(i)
-        else min(nb0Col(c)(i), nb1Col(c)(i))
-      } else { // x != c, x != d
-        0
-      }
-    }
-  }
-
-  // an upper bound on the added cost to block c,d of assinging vertex i to cluster x
-  // it is accurate only for vertices i in unboundVertices
-  def ubAssignment(i: Int, x: Int, c: Int, d: Int): Int = {
-    if (x == c) {
-      if (x == d) { // x == c == d
-        if (M(c)(d) isBoundTo 1)
-          nb0Col(c)(i).value + nb0Row(i)(c).value + (if (X(i)(i)) 0 else 1)
-        else if (M(c)(d) isBoundTo 0)
-          nb1Col(c)(i).value + nb1Row(i)(c).value + (if (X(i)(i)) 1 else 0)
-        else max(
-          nb0Col(c)(i).value + nb0Row(i)(c).value + (if (X(i)(i)) 0 else 1),
-          nb1Col(c)(i).value + nb1Row(i)(c).value + (if (X(i)(i)) 1 else 0)
-        )
-      } else { // x == c, x != d
-        if (M(c)(d) isBoundTo 1) nb0Row(i)(d)
-        else if (M(c)(d) isBoundTo 0) nb1Row(i)(d)
-        else max(nb0Row(i)(d), nb1Row(i)(d))
-      }
-    } else {
-      if (x == d) { // x != c, x == d
-        if (M(c)(d) isBoundTo 1) nb0Col(c)(i)
-        else if (M(c)(d) isBoundTo 0) nb1Col(c)(i)
-        else max(nb0Col(c)(i), nb1Col(c)(i))
-      } else { // x != c, x != d
-        0
-      }
-    }
-  }
-
-  protected val delta = Array.fill(n,k)(new ReversibleInt(s, 0))
 
   override def associatedVars(): Iterable[CPVar] = M.toVector.flatten ++ C ++ cost.toVector.flatten :+ totalCost
 
   override def setup(l: CPPropagStrength): Unit = {
+
     for (r <- 0 until k; s <- 0 until k) {
-      cost(r)(s).callPropagateWhenBoundsChange(this)
+      costsDeltas(r)(s) = cost(r)(s).callPropagateOnChangesWithDelta(this)
       M(r)(s).callPropagateWhenBind(this)
     }
-    for (i <- 0 until n) CDeltas(i) = C(i).callPropagateOnChangesWithDelta(this)
+
+    for (i <- 0 until n) C(i).callPropagateWhenBind(this)
+
     totalCost.callPropagateWhenBoundsChange(this)
 
     propagate()
+
   }
-
-  @inline def minDeltaC(vertex: Int): Int =
-    if (vertex >= 0 && vertex < n) C(vertex).minBy(delta(vertex)(_).value)
-    else 0
-
-  @inline def minDeltaM(c: Int, d: Int): Int =
-    if (nb0Block(c)(d) < nb1Block(c)(d)) 1
-    else 0
-
-  private val clustersChanged = Array.ofDim[Boolean](k)
-
-  // a lower bound on the cost incurred by arcs going from vertex i to vertices in cluster c
-  // it is accurate only for vertices i in unboundVertices
-  @inline def lbRowCost(c: Int, i: Int): Int =
-    if (nb0Row(i)(c) < nb1Row(i)(c)) nb0Row(i)(c)
-    else nb1Row(i)(c)
-
-  // a lower bound on the cost incurred by arcs going from vertices in cluster c to vertex i
-  // it is accurate only for vertices i in unboundVertices
-  @inline def lbColCost(c: Int, i: Int): Int =
-    if (nb0Col(c)(i) < nb1Col(c)(i)) nb0Col(c)(i)
-    else nb1Col(c)(i)
 
   def updateCounters(): Unit = {
     var x = unboundVertices.size-1
     while (x >= 0) {
       val i = unboundVertices(x)
-
       if (C(i).isBound) {
         unboundVertices.removeValue(i)
-
         val r = C(i).value
-        clustersChanged(r) = true
-
         // update the unbound counters
         var y = unboundVertices.size-1
         while (y >= 0){
           val j = unboundVertices(y)
           // a link i->j becomes a link r->j
-          if (X(i)(j))  nb1Col(r)(j) += 1
-          else          nb0Col(r)(j) += 1
+          if (X(i)(j))  nb1UnboundCol(r)(j) += 1
+          else          nb0UnboundCol(r)(j) += 1
           // a link j->i becomes a link j->r
-          if (X(j)(i))  nb1Row(j)(r) += 1
-          else          nb0Row(j)(r) += 1
+          if (X(j)(i))  nb1UnboundRow(j)(r) += 1
+          else          nb0UnboundRow(j)(r) += 1
 
           y -= 1
         }
@@ -183,168 +93,175 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
         var s = 0
         while (s < k) {
           // for the row r, we add the rows
-          nb0Block(r)(s) += nb0Row(i)(s)
-          nb1Block(r)(s) += nb1Row(i)(s)
+          nb0Bound(r)(s) += nb0UnboundRow(i)(s)
+          nb1Bound(r)(s) += nb1UnboundRow(i)(s)
           // for the column r, we add the columns
-          nb0Block(s)(r) += nb0Col(s)(i)
-          nb1Block(s)(r) += nb1Col(s)(i)
+          nb0Bound(s)(r) += nb0UnboundCol(s)(i)
+          nb1Bound(s)(r) += nb1UnboundCol(s)(i)
           s += 1
         }
 
-        if (X(i)(i))  nb1Block(r)(r) += 1
-        else          nb0Block(r)(r) += 1
+        if (X(i)(i))  nb1Bound(r)(r) += 1
+        else          nb0Bound(r)(r) += 1
 
       }
       x -= 1
     }
   }
 
-
-  private val clusters = Array.ofDim[Int](k)
-
-  def updateMinMaxSize(): Unit = {
-    var i = 0
-    while (i < n) {
-      val delta = CDeltas(i)
-      if (delta.changed) {
-        if (C(i).isBound) minSize(C(i).value) += 1
-        delta.fillArray(clusters)
-        var j = 0
-        while (j < delta.size) {
-          val c = clusters(j)
-          maxSize(c) -= 1
-          j += 1
-        }
-      }
-      i += 1
-    }
-  }
-
-  def filterM(): Unit = {
+  def filterCost(): Unit = {
+    var minTotalCost = 0
     var r = 0
     while (r < k) {
-      if (clustersChanged(r)) {
-        var s = 0
-        while (s < k) {
-          if (!M(r)(s).isBound) {
-            if (nb0Block(r)(s) > cost(r)(s).getMax) {
-              M(r)(s).assignFalse()
-            }
-            if (nb1Block(r)(s) > cost(r)(s).getMax) {
-              M(r)(s).assignTrue()
-            }
-          }
-          if (!M(s)(r).isBound) {
-            if (nb0Block(s)(r) > cost(s)(r).getMax) {
-              M(s)(r).assignFalse()
-            }
-            if (nb1Block(s)(r) > cost(s)(r).getMax) {
-              M(s)(r).assignTrue()
-            }
-          }
-          s += 1
-        }
-      }
+      var s = 0
+      while (s < k) {
+        val minCost: Int =
+          if (! M(r)(s).isBound) min(nb0Bound(r)(s), nb1Bound(r)(s))
+          else if (M(r)(s).value == 0) nb1Bound(r)(s)
+          else /* M(r)(s).value == 1*/ nb0Bound(r)(s)
 
+        minTotalCost += minCost
+        cost(r)(s).updateMin(minCost)
+        s += 1
+      }
+      r += 1
+    }
+
+    var x = 0
+    while (x < unboundVertices.size) {
+      val i = unboundVertices(x)
+      var r = 0
+      while (r < k) {
+        if (C(i).forall(M(r)(_) isBoundTo 0)) // if this row can only go to a 0 block, we add the number of 1
+          minTotalCost += nb1UnboundRow(i)(r)
+        else if (C(i).forall(M(r)(_) isBoundTo 1)) // and if it can only go to a 1 block, the number of 0
+          minTotalCost += nb0UnboundRow(i)(r)
+        else  minTotalCost += min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r)) // otherwise the min is a safe bet
+        // same thing for the columns
+        if (C(i).forall(M(_)(r).isBoundTo(0)))
+          minTotalCost += nb1UnboundCol(r)(i)
+        else if (C(i).forall(M(_)(r).isBoundTo(1)))
+          minTotalCost += nb0UnboundCol(r)(i)
+        else  minTotalCost += min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))
+        r += 1
+      }
+      x += 1
+    }
+    totalCost.updateMin(minTotalCost)
+    if (unboundVertices.isEmpty && M.flatten.forall(_.isBound))
+      totalCost.updateMax(minTotalCost)
+  }
+
+  def filterB(): Unit = {
+    var r = 0
+    while (r < k) {
+      var s = 0
+      while (s < k) {
+        if (!M(r)(s).isBound) {
+          if (nb0Bound(r)(s) > cost(r)(s).getMax) M(r)(s).removeValue(1)
+          if (nb1Bound(r)(s) > cost(r)(s).getMax) M(r)(s).removeValue(0)
+        }
+        s += 1
+      }
       r += 1
     }
   }
 
   def filterC(): Unit = {
+    // for every unbound vertex i, we will calculate the updated costs of adding it to position r
+    //for (i <- unboundVertices; r <- C(i); s <- 0 until b) {
     var x = 0
     while (x < unboundVertices.size) {
       val i = unboundVertices(x)
-      C(i).fillArray(clusters)
+      val domain = C(i).toArray
       var y = 0
-      while (y < C(i).getSize) {
-        val c = clusters(y)
-        if (clustersChanged(c)) {
-          // this will store the sum for all blocks of the added cost of assigning vertex i to cluster c
-          var Δic = 0
-          // we check if the added costs exceeds cost(c)(d) for any d
-          var d = 0
-          while (d < k && C(i).hasValue(c)) {
-            val δic_cd = lbAssignment(i, c, c, d) // added cost for block c,d of assigning i to c
-            Δic += δic_cd
-            if (lbCost(c, d) + δic_cd > cost(c)(d).getMax) {
-              C(i).removeValue(c)
-            }
-            // do the same for δic_dc, but only if c != d
-            if (c != d) {
-              val δic_dc = lbAssignment(i, c, d, c) // added cost for block d,c of assigning i to c
-              Δic += δic_dc
-              if (lbCost(d, c) + δic_dc > cost(d)(c).getMax) {
-                C(i).removeValue(c)
+      while (y < domain.length) {
+        val r = domain(y)
+
+        var Δir = 0
+
+        var s = 0
+        while (s < k) {
+          if (costsDeltas(r)(s).maxChanged) {
+            if (r == s) {
+              val newNb0 = nb0Bound(r)(s).value + nb0UnboundRow(i)(s) + nb0UnboundCol(s)(i) + (if (X(i)(i)) 0 else 1)
+              val newNb1 = nb1Bound(r)(s).value + nb1UnboundRow(i)(s) + nb1UnboundCol(s)(i) + (if (X(i)(i)) 1 else 0)
+
+              if (M(r)(r).isBoundTo(1)) Δir += newNb0 - nb0Bound(r)(s)
+              else if (M(r)(r).isBoundTo(0)) Δir += newNb1 - nb1Bound(r)(s)
+              else Δir += min(newNb0 - nb0Bound(r)(s), newNb1 - nb1Bound(r)(s))
+
+              if ((M(r)(r).isBoundTo(1) && newNb0 > cost(r)(r).getMax) ||
+                (M(r)(r).isBoundTo(0) && newNb1 > cost(r)(r).getMax) ||
+                min(newNb1, newNb0) > cost(r)(r).getMax) {
+                C(i).removeValue(r)
+              }
+            } else {
+              // for the row r
+              val newNb0_rs = nb0Bound(r)(s).value + nb0UnboundRow(i)(s)
+              val newNb1_rs = nb1Bound(r)(s).value + nb1UnboundRow(i)(s)
+
+              if (M(r)(s).isBoundTo(1)) Δir += nb0UnboundRow(i)(s)
+              else if (M(r)(s).isBoundTo(0)) Δir += nb1UnboundRow(i)(s)
+              else Δir += min(nb0UnboundRow(i)(s), nb1UnboundRow(i)(s))
+              // for the column r
+              val newNb0_sr = nb0Bound(s)(r).value + nb0UnboundCol(s)(i)
+              val newNb1_sr = nb1Bound(s)(r).value + nb1UnboundCol(s)(i)
+
+              if (M(s)(r).isBoundTo(1)) Δir += nb0UnboundCol(s)(i)
+              else if (M(r)(s).isBoundTo(0)) Δir += nb1UnboundCol(s)(i)
+              else Δir += min(nb0UnboundCol(s)(i), nb1UnboundCol(s)(i))
+
+              if ((M(r)(s).isBoundTo(1) && newNb0_rs > cost(r)(s).getMax) ||
+                (M(r)(s).isBoundTo(0) && newNb1_rs > cost(r)(s).getMax) ||
+                min(newNb0_rs, newNb1_rs) > cost(r)(s).getMax ||
+                (M(s)(r).isBoundTo(1) && newNb0_sr > cost(s)(r).getMax) ||
+                (M(s)(r).isBoundTo(0) && newNb1_sr > cost(s)(r).getMax) ||
+                min(newNb0_sr, newNb1_sr) > cost(s)(r).getMax) {
+                C(i).removeValue(r)
               }
             }
-            d += 1
           }
-          if (lbTotalCost.value + Δic > totalCost.getMax) {
-            C(i).removeValue(c)
-          }
-
-          delta(i)(c) := Δic
+          s += 1
         }
 
+        delta(i)(r) := Δir
         y += 1
       }
       x += 1
     }
   }
 
-  def filterCost(): Unit = {
-    var minTotalCost = 0
-    var c = 0
-    while (c < k) {
-      var d = 0
-      while (d < k) {
-        val minCostCD = lbCost(c,d)
-        minTotalCost += minCostCD
+  def biggestCostDelta(vertex: Int): Int = C(vertex).maxBy(delta(vertex)(_).value)
 
-        cost(c)(d).updateMin(minCostCD)
+  def smallestCostDelta(vertex: Int): Int = C(vertex).minBy(delta(vertex)(_).value)
 
-        val x1 = minSize(c).value
-        val x2 = maxSize(c).value - minSize(c)
-        val y1 = minSize(d).value
-        val y2 = maxSize(d).value - minSize(d)
-        val unknownSize = x1*y2 + y1*x2 + x2*y2
+  def worstFirstValueOrder(vertex: Int): Array[Int] =
+    C(vertex).toArray.sortBy(-delta(vertex)(_).value)
 
-        if (M(c)(d).isBound) {
-          cost(c)(d).updateMax(minCostCD + unknownSize)
-        }
-        else {
-          cost(c)(d).updateMax(max(nb1Block(c)(d), nb0Block(c)(d)) + unknownSize)
-        }
-
-        d += 1
-      }
-      c += 1
-    }
-
-    lbTotalCost := minTotalCost
-
-    var x = 0
-    while (x < unboundVertices.size) {
-      val i = unboundVertices(x)
-      var c = 0
-      while (c < k) {
-        minTotalCost += lbColCost(c,i) + lbRowCost(c,i)
-        c += 1
-      }
-      x += 1
-    }
-    totalCost.updateMin(minTotalCost)
-  }
+  def bestFirstValueOrder(vertex: Int): Array[Int] =
+    C(vertex).toArray.sortBy(delta(vertex)(_).value)
 
   override def propagate(): Unit = {
-
-    // reset all flags of clustersChanged to false.
-    java.util.Arrays.fill(clustersChanged, false)
-
     updateCounters()
     filterCost()
-    filterM()
+    filterB()
     filterC()
-    updateMinMaxSize()
+  }
+
+  def heuristic(): Seq[search.Alternative] = {
+    // take the unbound vertex with minimal domain size if it exists, None otherwise
+    C.filterNot(_.isBound).reduceOption((a, b) => if (a.size <= b.size) a else b) match {
+      case Some(v) => // there is an unbound vertex, so we bind it first
+        val maxUsed = C.maxBoundOrElse(-1)
+        branchAll((0 to maxUsed + 1).filter(v.hasValue))(value => s.add(v === value))
+      case None => // all vertices have been bound, we bind the M values
+        (for(x <- 0 until k; y <- 0 until k) yield (x,y)).find({case (x,y) => !M(x)(y).isBound}) match {
+          case Some((x,y)) =>
+            if (nb0Bound(x)(y) < nb1Bound(x)(y)) branch(s.add(M(x)(y) === 1))(s.add(M(x)(y) !== 1))
+            else branch(s.add(M(x)(y) === 0))(s.add(M(x)(y) !== 0))
+          case None => noAlternative
+        }
+    }
   }
 }

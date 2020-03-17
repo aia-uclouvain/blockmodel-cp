@@ -13,7 +13,7 @@ class FileReporter(val str: String, val path: String, val append: Boolean) {
   try {
     println("opening file "+path)
     val f: File = new File(path)
-    f.getParentFile.mkdirs()
+    //f.getParentFile.mkdirs()
     val writer = new PrintWriter(new FileOutputStream(f, append))
     writer.write(str)
     if(!str.endsWith("\n") && str.length > 0){
