@@ -21,4 +21,12 @@ class BlockmodelCPModel(graph: Digraph, val k: Int) extends CPModel {
   add(sum(cost.flatten, totalCost)) // totalCost = sum of all costs
   val blockmodelConstraint = new BlockmodelCost(X,M,C,cost,totalCost)
   add(blockmodelConstraint)
+
+  if (graph.isSymmetrical) {
+    println("symmetrical :-) we can do some nice stuff here")
+    for (i <- 0 until k; j <- 0 until i){
+      add(M(i)(j) === M(j)(i))
+      add(cost(i)(j) === cost(j)(i))
+    }
+  }
 }

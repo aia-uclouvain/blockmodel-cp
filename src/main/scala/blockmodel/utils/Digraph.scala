@@ -11,10 +11,25 @@ class Digraph(val adjacencyMatrix: Array[Array[Boolean]], val names: Int => Stri
     throw new IllegalArgumentException("The provided adjacency matrix is not square")
 
   def apply(i: Int): Array[Boolean] = adjacencyMatrix(i)
+
   def apply(i: Int, j: Int): Boolean = adjacencyMatrix(i)(j)
 
   override def toString: String = {
-    adjacencyMatrix.mapCells(if(_) "1" else "·").toStringMatrix
+    adjacencyMatrix.mapCells(if (_) "1" else "·").toStringMatrix
+  }
+
+  def isSymmetrical: Boolean = {
+    var res = true
+    var i = 0
+    while (res && i < n) {
+      var j = 0
+      while (res && j <= i) {
+        res = adjacencyMatrix(i)(j) == adjacencyMatrix(j)(i)
+        j += 1
+      }
+      i += 1
+    }
+    res
   }
 }
 

@@ -232,7 +232,19 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
     }
   }
 
-  def biggestCostDelta(vertex: Int): Int = C(vertex).maxBy(delta(vertex)(_).value)
+  def biggestCostDelta(vertex: Int): Int = {
+    var best = C(vertex).getMin
+    var max = delta(vertex)(best)
+    var i = best+1
+    while (i < C(vertex).getMax) {
+      if (C(vertex).hasValue(i) && delta(vertex)(i) > max) {
+        max = delta(vertex)(i)
+        best = i
+      }
+      i += 1
+    }
+    best
+  }
 
   def smallestCostDelta(vertex: Int): Int = C(vertex).minBy(delta(vertex)(_).value)
 
