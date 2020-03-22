@@ -8,4 +8,5 @@ project/boot/
 project/plugins/project/
 .history
 .cache
+.idea/
 .lib/
