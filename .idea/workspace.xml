@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="mdlcurve:jar" />
+    </artifacts-to-build>
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="60a00f5b-e8ba-492c-bcf1-bb9c497433f7" name="Default Changelist" comment="" />
+    <list default="true" id="60a00f5b-e8ba-492c-bcf1-bb9c497433f7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/experiment/mdlcurve.jar" beforeDir="false" afterPath="$PROJECT_DIR$/experiment/mdlcurve.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunMDLScoreCurve.scala" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunMDLScoreCurve.scala" afterDir="false" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -30,19 +40,10 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="525">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunShortTableModel.scala">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/BlockmodelCPModel.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-3866">
-              <caret line="2" selection-start-line="2" selection-end-line="2" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/BlockmodelSearchResult.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="273">
-              <caret line="7" column="6" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
+            <state relative-caret-position="968">
+              <caret line="25" column="59" selection-start-line="25" selection-start-column="59" selection-end-line="25" selection-end-column="59" />
             </state>
           </provider>
         </entry>
@@ -50,19 +51,28 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/Digraph.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="11" selection-start-line="11" selection-end-line="11" />
+            <state relative-caret-position="748">
+              <caret line="20" column="31" selection-start-line="20" selection-start-column="31" selection-end-line="20" selection-end-column="31" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/DoubleVar.scala">
+        <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.13.0-sources.jar!/scala/collection/IterableOnce.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="780">
-              <caret line="25" selection-start-line="25" selection-start-column="2" selection-end-line="47" selection-end-column="5" />
+            <state relative-caret-position="25168">
+              <caret line="586" column="6" selection-start-line="586" selection-start-column="6" selection-end-line="586" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/BlockmodelCost.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="4576">
+              <caret line="111" column="6" selection-start-line="111" selection-start-column="6" selection-end-line="111" selection-end-column="6" />
               <folding>
-                <element signature="e#26#57#0" expanded="true" />
+                <element signature="e#32#97#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -71,53 +81,53 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/FileReporter.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/JsonBuilder.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="5" column="27" selection-start-line="5" selection-start-column="27" selection-end-line="5" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/Matrix.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1292">
-              <caret line="5" column="42" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
+            <state relative-caret-position="396">
+              <caret line="9" column="26" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="26" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/MaximizeDouble.scala">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunMDLScoreCurve.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="195">
-              <caret line="8" column="34" selection-start-line="8" selection-start-column="34" selection-end-line="8" selection-end-column="34" />
+            <state relative-caret-position="1003">
+              <caret line="36" column="5" lean-forward="true" selection-start-line="36" selection-start-column="5" selection-end-line="36" selection-end-column="5" />
+              <folding>
+                <element signature="e#32#81#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/DoubleVarImpl.scala">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunOurModel.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
+            <state relative-caret-position="3212">
+              <caret line="81" column="44" selection-start-line="81" selection-start-column="44" selection-end-line="81" selection-end-column="44" />
+              <folding>
+                <element signature="e#32#51#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/BigDecimalDoubleVar.scala">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingBranching.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="312">
-              <caret line="13" column="48" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
+            <state relative-caret-position="1804">
+              <caret line="42" column="28" selection-start-line="42" selection-start-column="28" selection-end-line="42" selection-end-column="28" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/LogBinomialConstraint.scala">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="572">
+              <caret line="18" selection-start-line="18" selection-end-line="27" selection-end-column="5" />
+              <folding>
+                <element signature="e#32#76#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -141,10 +151,20 @@
       <find>precision</find>
       <find>apply(</find>
       <find>sum</find>
+      <find>B</find>
+      <find>maxBy</find>
+      <find>filterCost</find>
     </findStrings>
     <replaceStrings>
       <replace>_2.13</replace>
+      <replace>X(</replace>
+      <replace>M(</replace>
+      <replace>cost(</replace>
+      <replace>M</replace>
     </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -168,7 +188,6 @@
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/RunScript.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/RunShortTableModel.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/scriptFile.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/Digraph.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/MDLModel.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/search/FirstFailDynamicSymmetryBreaking.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingCOS.java" />
@@ -177,18 +196,22 @@
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/constraints/LogBinomialConstraint.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/constraints/SumDouble.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/executables/BlockmodelSearchResult.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingBranching.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/Blockmodel.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/BlockmodelCPModel.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/ShortTableModel.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunShortTableModel.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/BlockmodelSearchResult.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/BigDecimalDoubleVar.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/DoubleVarImpl.scala" />
-        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/FileReporter.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/JsonBuilder.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/Matrix.scala" />
         <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/MaximizeDouble.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunOurModel.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/FileReporter.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/utils/Digraph.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingBranching.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/BlockmodelCPModel.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/constraints/BlockmodelCost.scala" />
+        <option value="$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunMDLScoreCurve.scala" />
       </list>
     </option>
   </component>
@@ -237,53 +260,53 @@
       <select />
     </treeState>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1932" />
-    <option name="width" value="1908" />
-    <option name="height" value="2106" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="924" />
+    <option name="width" value="2916" />
+    <option name="height" value="2069" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
               <item name="blockmodel" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
@@ -291,8 +314,8 @@
               <item name="constraints" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
@@ -300,8 +323,8 @@
               <item name="executables" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
@@ -309,8 +332,8 @@
               <item name="search" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
@@ -318,27 +341,23 @@
               <item name="utils" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="jair" type="462c0819:PsiDirectoryNode" />
+              <item name="blockmodel-cp" type="b2602c69:ProjectViewProjectNode" />
+              <item name="blockmodel-cp" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="test" type="462c0819:PsiDirectoryNode" />
               <item name="scala" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="jair" type="b2602c69:ProjectViewProjectNode" />
-              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -346,12 +365,14 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="true" />
     <property name="Repository.Attach.Sources" value="false" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
     <property name="full.screen.before.presentation.mode" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/manifests/mdlcurve" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Artifacts" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.34682354" />
     <property name="settings.editor.selected.configurable" value="MavenSettings" />
@@ -361,11 +382,11 @@
       <recent name="" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="blockmodel.executables" />
       <recent name="blockmodel.search" />
       <recent name="blockmodel.utils" />
       <recent name="blockmodel" />
       <recent name="" />
-      <recent name="blockmodel.constraints" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -380,7 +401,38 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="ScalaTest.short table model test">
+  <component name="RunManager" selected="Application.RunMDLScoreCurve (1)">
+    <configuration name="RunMDLScoreCurve (1)" type="Application" factoryName="Application">
+      <option name="MAIN_CLASS_NAME" value="blockmodel.executables.RunMDLScoreCurve" />
+      <module name="jair" />
+      <option name="PROGRAM_PARAMETERS" value="graph/dolphins/dolphins.tsv 10 dolphins.data" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blockmodel.executables.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <RunnerSettings RunnerId="Profile ">
+        <option name="myExternalizedOptions" value="additional-options2=onexit\=snapshot&#10;startup=12" />
+      </RunnerSettings>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RunMDLScoreCurve" type="Application" factoryName="Application" temporary="true">
+      <option name="MAIN_CLASS_NAME" value="blockmodel.executables.RunMDLScoreCurve" />
+      <module name="jair" />
+      <option name="PROGRAM_PARAMETERS" value="graph/LittleLeaguetransatlantic.tsv 10 LLTcurve.data" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="blockmodel.executables.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="RunShortTableModel" type="Application" factoryName="Application" temporary="true">
       <option name="MAIN_CLASS_NAME" value="blockmodel.executables.RunShortTableModel" />
       <module name="jair" />
@@ -517,8 +569,10 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="Application.RunMDLScoreCurve (1)" />
       <item itemvalue="Application.Test" />
       <item itemvalue="Application.RunShortTableModel" />
+      <item itemvalue="Application.RunMDLScoreCurve" />
       <item itemvalue="ScalaTest.logBinomialTest" />
       <item itemvalue="ScalaTest.SumDoubleTest" />
       <item itemvalue="ScalaTest.short table model test" />
@@ -528,6 +582,7 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.RunMDLScoreCurve" />
         <item itemvalue="Application.RunShortTableModel" />
         <item itemvalue="Application.Test" />
       </list>
@@ -568,22 +623,25 @@
       <workItem from="1583775895676" duration="2000" />
       <workItem from="1583833178843" duration="10773000" />
       <workItem from="1583935110889" duration="1826000" />
+      <workItem from="1583938047955" duration="614000" />
+      <workItem from="1584457694268" duration="5855000" />
+      <workItem from="1584547035210" duration="1192000" />
+      <workItem from="1584617861454" duration="693000" />
+      <workItem from="1584629539241" duration="5724000" />
+      <workItem from="1584715253299" duration="262000" />
+      <workItem from="1584716919686" duration="685000" />
     </task>
+    <task id="LOCAL-00001" summary="added code to run MDL curve experiment + corrections on the global constraint">
+      <created>1584463857882</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1584463857883</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="SumDoubleTest - 2020.03.02 at 16h 17m 55s.xml">
-      <configuration name="SumDoubleTest" configurationId="ScalaTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="SumDoubleTest - 2020.03.02 at 16h 19m 25s.xml">
-      <configuration name="SumDoubleTest" configurationId="ScalaTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="SumDoubleTest - 2020.03.02 at 16h 22m 55s.xml">
-      <configuration name="SumDoubleTest" configurationId="ScalaTestRunConfiguration" />
-    </history-entry>
-    <history-entry file="short_table_model_test - 2020.03.05 at 14h 59m 48s.xml">
-      <configuration name="short table model test" configurationId="ScalaTestRunConfiguration" />
-    </history-entry>
     <history-entry file="short_table_model_test - 2020.03.05 at 15h 01m 47s.xml">
       <configuration name="short table model test" configurationId="ScalaTestRunConfiguration" />
     </history-entry>
@@ -602,9 +660,21 @@
     <history-entry file="short_table_model_test - 2020.03.05 at 16h 52m 44s.xml">
       <configuration name="short table model test" configurationId="ScalaTestRunConfiguration" />
     </history-entry>
+    <history-entry file="short_table_model_test - 2020.03.11 at 15h 53m 43s.xml">
+      <configuration name="short table model test" configurationId="ScalaTestRunConfiguration" />
+    </history-entry>
+    <history-entry file="BlockmodelCostTest - 2020.03.17 at 16h 55m 18s.xml">
+      <configuration name="BlockmodelCostTest" configurationId="ScalaTestRunConfiguration" />
+    </history-entry>
+    <history-entry file="BlockmodelCostTest - 2020.03.17 at 17h 27m 43s.xml">
+      <configuration name="BlockmodelCostTest" configurationId="ScalaTestRunConfiguration" />
+    </history-entry>
+    <history-entry file="BlockmodelCostTest - 2020.03.17 at 17h 47m 18s.xml">
+      <configuration name="BlockmodelCostTest" configurationId="ScalaTestRunConfiguration" />
+    </history-entry>
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="68212000" />
+    <option name="totallyTimeSpent" value="83237000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -616,10 +686,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-12" y="0" width="3864" height="2106" extended-state="6" />
+    <frame x="924" y="0" width="2916" height="2069" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21455126" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16095646" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Designer" order="2" />
       <window_info id="Image Layers" order="3" />
@@ -628,16 +698,16 @@
       <window_info id="Favorites" order="6" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.5405117" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.30576715" />
       <window_info anchor="bottom" id="Cvs" order="3" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="4" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="5" weight="0.32996276" />
       <window_info anchor="bottom" id="Terminal" order="6" weight="0.32958803" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Event Log" order="8" side_tool="true" weight="0.3277897" />
-      <window_info anchor="bottom" id="Messages" order="9" weight="0.14232409" />
+      <window_info active="true" anchor="bottom" id="Messages" order="9" visible="true" weight="0.14145811" />
       <window_info anchor="bottom" id="Database Changes" order="10" />
-      <window_info anchor="bottom" id="Version Control" order="11" />
+      <window_info anchor="bottom" id="Version Control" order="11" weight="0.32952693" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.051779076" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -686,6 +756,10 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="added code to run MDL curve experiment + corrections on the global constraint" />
+    <option name="LAST_COMMIT_MESSAGE" value="added code to run MDL curve experiment + corrections on the global constraint" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
@@ -703,56 +777,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/constraints/MulVar.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1443">
-          <caret line="62" column="27" selection-start-line="62" selection-start-column="27" selection-end-line="62" selection-end-column="27" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/constraints/Square.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="31" column="18" selection-start-line="31" selection-start-column="18" selection-end-line="31" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/BigShortTableModel.scala" />
-    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/core/variables/CPIntVar.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="715" column="6" selection-start-line="715" selection-start-column="6" selection-end-line="715" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/constraints/LeEq.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="346">
-          <caret line="41" column="11" selection-start-line="41" selection-start-column="11" selection-end-line="41" selection-end-column="11" />
-          <folding>
-            <element signature="e#1552#1553#0" expanded="true" />
-            <element signature="e#1599#1600#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.13.0-sources.jar!/scala/concurrent/duration/package.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="610">
-          <caret line="48" column="12" selection-start-line="48" selection-start-column="12" selection-end-line="48" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/modeling/Constraints.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="29718">
-          <caret line="789" column="36" selection-start-line="789" selection-start-column="36" selection-end-line="789" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200221.023419-67-sources.jar!/oscar/cp/constraints/tables/Table.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="4329">
@@ -790,17 +814,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="702">
           <caret line="37" column="23" selection-start-line="37" selection-start-column="23" selection-end-line="37" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/test/scala/BlockmodelCostTest.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="858">
-          <caret line="38" selection-start-line="38" selection-end-line="40" selection-end-column="49" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-            <element signature="e#438#1016#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -894,23 +907,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/BlockmodelCost.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="897">
-          <caret line="29" column="6" selection-start-line="29" selection-start-column="6" selection-end-line="29" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/LogBinomialConstraint.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="307">
-          <caret line="15" column="26" selection-start-line="15" selection-start-column="26" selection-end-line="15" selection-end-column="26" />
-          <folding>
-            <element signature="e#32#76#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/SumDouble.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
@@ -918,30 +914,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/BlockmodelSearchResult.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="780">
-          <caret line="20" column="25" selection-start-line="20" selection-start-column="25" selection-end-line="20" selection-end-column="25" />
-          <folding>
-            <element signature="e#32#60#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/search/FirstFailDynamicSymmetryBreaking.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="429">
-          <caret line="13" column="66" lean-forward="true" selection-start-line="13" selection-start-column="66" selection-end-line="13" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingBranching.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="190">
-          <caret line="15" column="90" selection-start-line="15" selection-start-column="90" selection-end-line="15" selection-end-column="90" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/BlockmodelSearchResult.scala" />
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/search/FirstFailDynamicSymmetryBreaking.scala" />
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/BaselineBlockmodelCPModel.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="546">
@@ -959,33 +933,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/BlockmodelCPModel.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="8" column="82" selection-start-line="8" selection-start-column="82" selection-end-line="8" selection-end-column="82" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/MDLModel.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="897">
-          <caret line="23" column="19" selection-start-line="23" selection-start-column="19" selection-end-line="23" selection-end-column="19" />
-          <folding>
-            <element signature="e#20#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/RunMDL.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="5" column="7" selection-start-line="5" selection-start-column="7" selection-end-line="5" selection-end-column="7" />
-          <folding>
-            <element signature="e#20#45#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/RunMDL.scala" />
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/ShortTableModel.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="234">
@@ -996,31 +944,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunShortTableModel.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3866">
-          <caret line="2" selection-start-line="2" selection-end-line="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/BigDecimalDoubleVar.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="13" column="48" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/BlockmodelSearchResult.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="273">
           <caret line="7" column="6" selection-start-line="7" selection-start-column="6" selection-end-line="7" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/Digraph.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="11" selection-start-line="11" selection-end-line="11" />
         </state>
       </provider>
     </entry>
@@ -1034,20 +961,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/DoubleVarImpl.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="312">
-          <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/FileReporter.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/JsonBuilder.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="195">
@@ -1057,7 +970,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/Matrix.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1292">
+        <state relative-caret-position="195">
           <caret line="5" column="42" selection-start-line="5" selection-start-column="42" selection-end-line="5" selection-end-column="42" />
         </state>
       </provider>
@@ -1069,16 +982,166 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/DoubleVarImpl.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="312">
+          <caret line="13" column="81" selection-start-line="13" selection-start-column="81" selection-end-line="13" selection-end-column="81" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/BigDecimalDoubleVar.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="312">
+          <caret line="13" column="48" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/MDLModel.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="780">
+          <caret line="20" column="27" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
+          <folding>
+            <element signature="e#20#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.13.0-sources.jar!/scala/collection/mutable/StringBuilder.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1373">
+          <caret line="473" column="7" selection-start-line="473" selection-start-column="7" selection-end-line="473" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.13.0-sources.jar!/scala/package.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="609">
+          <caret line="102" column="56" selection-start-line="102" selection-start-column="56" selection-end-line="102" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar:///usr/lib/jvm/java-11-jdk/lib/src.zip!/java.base/java/io/File.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="872">
+          <caret line="497" column="16" selection-start-line="497" selection-start-column="16" selection-end-line="497" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunShortTableModel.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3564">
+          <caret line="89" column="33" selection-start-line="89" selection-start-column="10" selection-end-line="89" selection-end-column="33" />
+          <folding>
+            <element signature="e#32#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/test/scala/BlockmodelCostTest.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="968">
+          <caret line="38" column="6" selection-start-line="38" selection-start-column="6" selection-end-line="40" selection-end-column="49" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+            <element signature="e#438#1016#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/oscar/oscar-cp_2.13/4.1.0-SNAPSHOT/oscar-cp_2.13-4.1.0-20200311.023429-86.jar!/oscar/cp/core/variables/CPIntVar.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="264">
+          <caret line="6" column="6" selection-start-line="6" selection-start-column="6" selection-end-line="6" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/BlockmodelCPModel.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="968">
+          <caret line="25" column="59" selection-start-line="25" selection-start-column="59" selection-end-line="25" selection-end-column="59" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/Digraph.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="748">
+          <caret line="20" column="31" selection-start-line="20" selection-start-column="31" selection-end-line="20" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$USER_HOME$/.ivy2/cache/org.scala-lang/scala-library/srcs/scala-library-2.13.0-sources.jar!/scala/collection/IterableOnce.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="25168">
+          <caret line="586" column="6" selection-start-line="586" selection-start-column="6" selection-end-line="586" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/BlockmodelCost.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4576">
+          <caret line="111" column="6" selection-start-line="111" selection-start-column="6" selection-end-line="111" selection-end-column="6" />
+          <folding>
+            <element signature="e#32#97#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/utils/FileReporter.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="9" column="26" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunOurModel.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3212">
+          <caret line="81" column="44" selection-start-line="81" selection-start-column="44" selection-end-line="81" selection-end-column="44" />
+          <folding>
+            <element signature="e#32#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/search/PermutationBreakingBranching.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1804">
+          <caret line="42" column="28" selection-start-line="42" selection-start-column="28" selection-end-line="42" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/constraints/LogBinomialConstraint.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="572">
+          <caret line="18" selection-start-line="18" selection-end-line="27" selection-end-column="5" />
+          <folding>
+            <element signature="e#32#76#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/blockmodel/executables/RunMDLScoreCurve.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1003">
+          <caret line="36" column="5" lean-forward="true" selection-start-line="36" selection-start-column="5" selection-end-line="36" selection-end-column="5" />
+          <folding>
+            <element signature="e#32#81#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
   </component>
   <component name="masterDetails">
     <states>
       <state key="ArtifactsStructureConfigurable.UI">
         <settings>
           <artifact-editor />
+          <last-edited>mdlcurve:jar</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
                 <option value="0.34682354" />
+                <option value="0.5" />
               </list>
             </option>
           </splitter-proportions>
@@ -1098,7 +1161,7 @@
       </state>
       <state key="GlobalLibrariesConfigurable.UI">
         <settings>
-          <last-edited>scala-sdk-2.13.0</last-edited>
+          <last-edited>org.scalatest:scalatest_2.13:3.1.1</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
@@ -1146,7 +1209,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>com.github.scopt:scopt_2.13:4.0.0-RC2</last-edited>
+          <last-edited>org.scalatest:scalatest_2.13:3.1.1</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
