@@ -14,7 +14,7 @@ object RunMDLScoreCurve extends App {
   val maxK = args(1).toInt
 
   val res = new StringBuilder()
-  res append "k\tmdl\tcost\n"
+  res append "k\tmdl\tmodel\terror\tcost\n"
 
   for (k <- 1 to maxK) {
     object model extends BlockmodelCPModel(g, k) {
@@ -37,9 +37,11 @@ object RunMDLScoreCurve extends App {
     }
     println(s"k = $k")
     println(model.stats)
-    val mdl = log(n) + n * log(k) + k*k + log(n*n) + logC(n*n, model.bestScore)
+    val mdl_model = log(n) + n * log(k) + k*k + log(n*n)
+    val mdl_error = logC(n*n, model.bestScore)
+    val mdl = mdl_model + mdl_error
     println(mdl)
-    res append s"$k\t$mdl\t${model.bestScore}\n"
+    res append s"$k\t$mdl\t$mdl_model\t$mdl_error\t${model.bestScore}\n"
   }
 
   new FileReporter(res.result(), args(2))
