@@ -82,6 +82,67 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
 }
 
 object Blockmodel {
+  /**
+    * generates an image graph with a ring structure, e.g.
+    *    *→*
+    *   ↗   ↘
+    *  *     *
+    *   ↖   ↙
+    *    *←*
+    * i.e. every cluster i is connected to the cluster i+1, and the last cluster is connected to the first one
+    * @param size the number of clusters
+    * @param directed wether the image graph must be directed or undirected = symmetrical
+    * @return the adjacency matrix for the image graph
+    */
+  def ringStructure(size: Int, directed: Boolean = true): Array[Array[Boolean]] = {
+    val res = Array.fill(size, size)(false)
+    for (i <- 0 until size) {
+      res(i)((i+1) % size) = true
+      if (!directed) res((i+1) % size)(i) = true
+    }
+    res
+  }
+
+  /**
+    * generates an image graph with a stick structure, e.g.
+    * *->*->*->*->*
+    * @param size the number of clusters in the image matrix
+    * @param directed whether the image graph must be directed or undirected = symmetrical
+    * @return the adjacency matrix for the image graph
+    */
+  def stickStructure(size: Int, directed: Boolean = true): Array[Array[Boolean]] = {
+    val res = Array.fill(size, size)(false)
+    for (i <- 0 until size-1) {
+      res(i)(i+1) = true
+      if (!directed) res(i+1)(i) = true
+    }
+    res
+  }
+  /**
+    * generates an image graph with a star structure, e.g.
+    *      *↺
+    *      ↑
+    *  ↻*← *↺→*↺
+    *      ↓
+    *      *↺
+    * i.e. distinct communities, all related to a central community
+    *
+    * @param size the number of clusters in the image matrix
+    * @param directed whether the image graph must be directed or undirected = symmetrical
+    * @return the adjacency matrix for the image graph
+    */
+  def starStructure(size: Int, directed: Boolean = true): Array[Array[Boolean]] = {
+    val res = Array.fill(size, size)(false)
+    for (i <- 0 until size-1) {
+      res(i)(i) = true
+      res(0)(i) = true
+      if (!directed) res(i)(0) = true
+    }
+    res
+  }
+
+  def communityStructure(size: Int): Array[Array[Boolean]] = Array.tabulate(size, size)((i,j) => i==j)
+
   def randomWithImageEqualClusterSize(M: Array[Array[Boolean]], n: Int, rng: Random = new Random()): Blockmodel = {
     val k = M.length
     val C = rng.shuffle( Vector.tabulate(n)(i => i % k) ).toArray

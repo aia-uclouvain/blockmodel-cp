@@ -6,7 +6,8 @@ import scala.collection.mutable
 import scala.util.Random
 
 class Digraph(val adjacencyMatrix: Array[Array[Boolean]], val names: Int => String = _.toString) {
-  val n: Int = adjacencyMatrix.length
+  val n: Int = adjacencyMatrix.length // number of nodes
+  val e: Int = adjacencyMatrix.flatten.count(identity) // number of edges
   for (row <- adjacencyMatrix if row.length != n)
     throw new IllegalArgumentException("The provided adjacency matrix is not square")
 
