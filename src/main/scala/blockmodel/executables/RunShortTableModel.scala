@@ -9,6 +9,7 @@ import blockmodel.utils.{BlockmodelSearchResult, Digraph}
 import org.rogach.scallop._
 import oscar.cp._
 import blockmodel.utils.Matrix._
+import javax.imageio.ImageIO
 import oscar.cp.searches.WeightedDegreeHelper
 
 import scala.concurrent.duration.{Duration, MINUTES}
@@ -164,7 +165,10 @@ object RunShortTableModel extends App with BlockmodelSearchResult {
     println("finished searching...")
     println(s"the search was${if(!isCompleted) " not" else " successfully"} completed in the given time budget.")
     println(stat)
-    getSolution.foreach(println)
+    getSolution.foreach(s => {
+      println(s.toStringGrouped(g))
+      ImageIO.write(s.toImageGrouped(g), "gif", new File("./out.gif"))
+    })
   }
 
   getNNodes = stat.nNodes

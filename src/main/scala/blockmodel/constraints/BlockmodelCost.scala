@@ -32,6 +32,8 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
                      cost: Array[Array[CPIntVar]], totalCost: CPIntVar)
   extends Constraint(C(0).store, "BlockmodelCost") {
 
+  var verbose: Boolean = false
+
   private val n = X.length // the number of vertices in the graph
   private val k = M.length // the number of positions in the model
 
@@ -121,6 +123,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
           else /* M(r)(s).value == 1*/ nb0Bound(r)(s)
 
         minTotalCost += minCost
+        if (verbose && minCost > cost(r)(s).getMin) println(s"cost$r$s lb is $minCost")
         cost(r)(s).updateMin(minCost)
         s += 1
       }
@@ -132,21 +135,36 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
       val i = unboundVertices(x)
       var r = 0
       while (r < k) {
-        if (C(i).forall(M(r)(_) isBoundTo 0)) // if this row can only go to a 0 block, we add the number of 1
+        if (C(i).forall(M(_)(r) isBoundTo 0)) { // if this row can only go to a 0 block, we add the number of 1
+          if (verbose) println(s"the row from C$i to cluster $r will always fall in a null block, so we add the number of 1s = ${nb1UnboundRow(i)(r)}")
           minTotalCost += nb1UnboundRow(i)(r)
-        else if (C(i).forall(M(r)(_) isBoundTo 1)) // and if it can only go to a 1 block, the number of 0
+        }
+        else if (C(i).forall(M(_)(r) isBoundTo 1)) { // and if it can only go to a 1 block, the number of 0
+          if (verbose) println(s"the row from C$i to cluster $r will always fall in a full block, so we add the number of 0s = ${nb0UnboundRow(i)(r)}")
           minTotalCost += nb0UnboundRow(i)(r)
-        else  minTotalCost += min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r)) // otherwise the min is a safe bet
+        }
+        else  { // otherwise the min is a safe bet
+          if (verbose && min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r)) > 0) println(s"vertex $i row $r will always cost at least ${min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))}")
+          minTotalCost += min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))
+        }
         // same thing for the columns
-        if (C(i).forall(M(_)(r).isBoundTo(0)))
+        if (C(i).forall(M(r)(_).isBoundTo(0))) {
+          if (verbose) println(s"the col from cluster $r to C$i will always fall in a null block, so we add the number of 1s = ${nb1UnboundCol(r)(i)}")
           minTotalCost += nb1UnboundCol(r)(i)
-        else if (C(i).forall(M(_)(r).isBoundTo(1)))
+        }
+        else if (C(i).forall(M(r)(_).isBoundTo(1))) {
+          if (verbose) println(s"the col from cluster $r to C$i will always fall in a full block, so we add the number of 0s = ${nb0UnboundCol(r)(i)}")
           minTotalCost += nb0UnboundCol(r)(i)
-        else  minTotalCost += min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))
+        }
+        else  {
+          if (verbose && min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i)) > 0) println(s"vertex $i col $r will always cost at least ${min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))}")
+          minTotalCost += min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))
+        }
         r += 1
       }
       x += 1
     }
+    if (verbose && minTotalCost > totalCost.getMin) println(s"totalcost lb is $minTotalCost")
     totalCost.updateMin(minTotalCost)
     if (unboundVertices.isEmpty && M.flatten.forall(_.isBound))
       totalCost.updateMax(minTotalCost)
@@ -158,8 +176,14 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
       var s = 0
       while (s < k) {
         if (!M(r)(s).isBound) {
-          if (nb0Bound(r)(s) > cost(r)(s).getMax) M(r)(s).removeValue(1)
-          if (nb1Bound(r)(s) > cost(r)(s).getMax) M(r)(s).removeValue(0)
+          if (nb0Bound(r)(s) > cost(r)(s).getMax) {
+            if (verbose) println(s"M$r$s cannot be 1")
+            M(r)(s).removeValue(1)
+          }
+          if (nb1Bound(r)(s) > cost(r)(s).getMax) {
+            if (verbose) println(s"M$r$s cannot be 0")
+            M(r)(s).removeValue(0)
+          }
         }
         s += 1
       }
@@ -194,6 +218,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
               if ((M(r)(r).isBoundTo(1) && newNb0 > cost(r)(r).getMax) ||
                 (M(r)(r).isBoundTo(0) && newNb1 > cost(r)(r).getMax) ||
                 min(newNb1, newNb0) > cost(r)(r).getMax) {
+                if (verbose) println(s"C$i cannot be in cluster $r")
                 C(i).removeValue(r)
               }
             } else {
@@ -218,6 +243,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
                 (M(s)(r).isBoundTo(1) && newNb0_sr > cost(s)(r).getMax) ||
                 (M(s)(r).isBoundTo(0) && newNb1_sr > cost(s)(r).getMax) ||
                 min(newNb0_sr, newNb1_sr) > cost(s)(r).getMax) {
+                if (verbose) println(s"C$i cannot be in cluster $r")
                 C(i).removeValue(r)
               }
             }
@@ -256,9 +282,40 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
 
   override def propagate(): Unit = {
     updateCounters()
+    if(verbose) printState()
     filterCost()
     filterB()
     filterC()
+  }
+
+  def printState(): Unit = {
+    import blockmodel.Blockmodel
+    import blockmodel.utils.Digraph
+    import blockmodel.utils.Matrix._
+    val tmpC = C.map(v => if (v.isBound) v.value else k)
+    val tmpM = Array.fill(k+1,k+1)(false)
+    val bm = new Blockmodel(tmpC, tmpM)
+    val g = new Digraph(X)
+    println("here is the state of the assignment (last group is unassigned)")
+    println(bm.toStringGrouped(g))
+    println("with the image matrix")
+    println(M.toStringMatrix)
+
+    println("number of 0")
+    println(nb0Bound.toStringMatrix)
+
+    println("number of 1")
+    println(nb1Bound.toStringMatrix)
+
+    val counts = Array.tabulate(k+unboundVertices.size,k+unboundVertices.size)((i,j) => {
+      val uv = (0 until n).filterNot(C(_).isBound)
+      if(i < k && j < k) nb1Bound(i)(j) + "/" + nb0Bound(i)(j)
+      else if(i < k && j >= k) nb1UnboundCol(i)(uv(j-k)) + "/" + nb0UnboundCol(i)(uv(j-k))
+      else if(i >= k && j < k) nb1UnboundRow(uv(i-k))(j) + "/" + nb0UnboundRow(uv(i-k))(j)
+      else "···"
+    })
+
+    println(counts.toStringMatrix.replace('0', '·'))
   }
 
   def heuristic(): Seq[search.Alternative] = {

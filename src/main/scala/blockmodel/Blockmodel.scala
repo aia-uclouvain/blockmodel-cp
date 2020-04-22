@@ -1,5 +1,8 @@
 package blockmodel
 
+import java.awt.{Color, Image}
+import java.awt.image.BufferedImage
+
 import utils.Digraph
 import utils.Matrix._
 
@@ -60,7 +63,7 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
     val result = new StringBuilder()
     // print the header for the columns
     result append nameFmt.format("") + "┃" + groupedVertices.map(group =>
-      group.map(id => fmt.format(id + 1)).mkString(" "))
+      group.map(id => fmt.format(id)).mkString(" "))
       .mkString("┃")
     result append "\n"
     for (group <- groupedVertices) {
@@ -68,7 +71,7 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
         groupedVertices.map(group => "━" * ((cellSize + 1) * group.length - 1)).mkString("╋")
       result append "\n"
       for (i <- group) {
-        result append nameFmt.format(g.names(i)+" "+(i+1)) + "┃"
+        result append nameFmt.format(g.names(i)+" "+(i)) + "┃"
         result append groupedVertices.map(group =>
           group.map(j =>
             if (g(i)(j)) fmt.format("1") else fmt.format("·")
@@ -78,6 +81,34 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
       }
     }
     result.toString()
+  }
+
+  def toImageGrouped(g: Digraph): BufferedImage = {
+    val size = g.n + k
+    val img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
+    val white = Color.WHITE.getRGB
+    val red   = Color.RED.getRGB
+    val black = Color.BLACK.getRGB
+
+    val groupedVertices = (0 to C.max).map(r => C.indices.filter(C(_) == r))
+    var pixels = List[Int]()
+    for (group <- groupedVertices) {
+      // horizontal separator
+      pixels ++= List.fill(size)(red)
+      for (i <- group) {
+        // fill the line for vertex i
+        for (group2 <- groupedVertices) {
+          pixels :+= red
+          for (j <- group2) {
+            if (g(i)(j)) pixels :+= black
+            else pixels :+= white
+          }
+        }
+      }
+    }
+    for(x <- 0 until size; y <- 0 until size)
+      img.setRGB(x, y, pixels(y+x*size))
+    img
   }
 }
 

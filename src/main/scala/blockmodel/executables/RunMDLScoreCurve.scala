@@ -37,8 +37,8 @@ object RunMDLScoreCurve extends App {
     }
     println(s"k = $k")
     println(model.stats)
-    val mdl_model = log(n) + n * log(k) + k*k + log(n*n)
-    val mdl_error = logC(n*n, model.bestScore)
+    val mdl_model = log(n)/log(2) + n * log(k)/log(2) + k*k + log(n*n)/log(2)
+    val mdl_error = logC(n*n, model.bestScore)/log(2)
     val mdl = mdl_model + mdl_error
     println(mdl)
     res append s"$k\t$mdl\t$mdl_model\t$mdl_error\t${model.bestScore}\n"

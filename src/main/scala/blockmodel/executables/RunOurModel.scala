@@ -2,12 +2,12 @@ package blockmodel.executables
 
 import java.io.File
 
-import blockmodel.executables.RunShortTableModel.Heuristics.Value
-import blockmodel.executables.RunShortTableModel.model.{C, M, totalCost}
-import blockmodel.executables.RunShortTableModel.{args, storeJson}
+import blockmodel.search.PermutationBreakingBranching
 import blockmodel.utils.Matrix._
 import blockmodel.utils.{BlockmodelSearchResult, Digraph}
-import blockmodel.{Blockmodel, BlockmodelCPModel, ShortTableModel}
+import blockmodel.{Blockmodel, BlockmodelCPModel}
+import javax.imageio.ImageIO
+import javax.imageio.stream.FileImageOutputStream
 import org.rogach.scallop.ScallopConf
 import oscar.cp._
 
@@ -27,6 +27,7 @@ object RunOurModel extends App with BlockmodelSearchResult {
     val description = opt[String](required = false, descr = "description")
     val time = opt[Int](required = false, descr = "time(seconds)")
     val verbose = opt[Boolean](required = false, descr = "verbose")
+    val ub = opt[Int](required = false, descr = "upper bound")
     verify()
   }
 
@@ -57,13 +58,17 @@ object RunOurModel extends App with BlockmodelSearchResult {
 
   val g = Digraph.fromTSV(getGraphFile)
   object model extends BlockmodelCPModel(g, getK) {
-    for (i <- 0 until getK) add(C(i) <= i)
+    // for (i <- 0 until getK) add(C(i) <= i)
     //for (i <- 0 until n) add(C(i) <= maximum(C.drop(i)))
     val decisionVars = C ++ M.flatten
     minimize(totalCost)
 
+    if (conf.ub.isDefined)
+      add(totalCost <= conf.ub.getOrElse(n*n))
+
     //val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
     search(
+      //PermutationBreakingBranching(C, blockmodelConstraint.biggestCostDelta, identity) ++ binaryMaxWeightedDegree(M.flatten.asInstanceOf[Array[CPIntVar]])
       binaryMaxWeightedDegree(decisionVars)
       //PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, identity)
       // PermutationBreakingBranching(decisionVars, minDom(decisionVars), identity)
@@ -80,16 +85,19 @@ object RunOurModel extends App with BlockmodelSearchResult {
       val blockmodel = new Blockmodel(solC, solM)
       getSolution = Some(blockmodel)
       println("***")
-      println(getScoreOfSolutions.map(_.toInt).zip(getTimeOfSolutions)
-        .map{case (score, time) => s"${time/1000.0}s:$score"}
-        .mkString("\t"))
       println(blockmodel)
+      println(cost.toStringMatrix)
+      println("totalcost is " + totalCost)
+      println(blockmodel.toStringGrouped(g))
     }
   }
 
   val stat = model.solver.startSubjectTo(timeLimit = getTimeBudget.toInt) {}
   println(stat)
-  getSolution.foreach(println)
+  getSolution.foreach(s => {
+    println(s)
+    ImageIO.write(s.toImageGrouped(g), "gif", new File("./out.gif"))
+  })
   isCompleted = stat.completed
   if (isCompleted) {
     val time = System.currentTimeMillis() - startTime
@@ -99,6 +107,7 @@ object RunOurModel extends App with BlockmodelSearchResult {
   getNNodes = stat.nNodes
   getTimeToBest = getTimeOfSolutions.last
   getScoreOfBest = getScoreOfSolutions.last
+  println(getScoreOfBest)
 
   conf.output.toOption match {
     case Some(value) => {

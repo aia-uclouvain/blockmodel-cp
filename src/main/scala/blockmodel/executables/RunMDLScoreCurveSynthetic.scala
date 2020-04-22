@@ -1,9 +1,12 @@
 package blockmodel.executables
 
+import java.io.File
+
 import blockmodel.search.PermutationBreakingBranching
 import blockmodel.utils.Matrix._
 import blockmodel.utils.{Digraph, FileReporter}
 import blockmodel.{Blockmodel, BlockmodelCPModel}
+import javax.imageio.ImageIO
 import oscar.cp._
 
 import scala.math.log
@@ -33,8 +36,10 @@ object RunMDLScoreCurveSynthetic extends App {
     val res = new StringBuilder()
     res append "k\tmdl\tmodel\terror\tcost\n"
 
+    val g = Digraph.randomWithImage(blockmodel, n, rng, noise)
+    g.saveTSV(s"$name-n$n-k$actualK-$noise-graph.tsv")
+
     for (k <- 1 to maxK) {
-      val g = Digraph.randomWithImage(blockmodel, n, rng, noise)
       object model extends BlockmodelCPModel(g, k) {
         var bestScore = totalCost.getMax
         var bestBM: Blockmodel = null
@@ -55,8 +60,8 @@ object RunMDLScoreCurveSynthetic extends App {
       }
       println(s"k = $k")
       println(model.stats)
-      val mdl_model = log(n) + n * log(k) + k*k + log(n*n)
-      val mdl_error = logC(n*n, model.bestScore)
+      val mdl_model = log(n)/log(2) + n * log(k)/log(2) + k*k + log(n*n)/log(2)
+      val mdl_error = logC(n*n, model.bestScore)/log(2)
       val mdl = mdl_model + mdl_error
       println(mdl)
       // save the stats for averaging later
@@ -66,6 +71,8 @@ object RunMDLScoreCurveSynthetic extends App {
       stats("cost")(k-1) :+= model.bestScore
       // add them to the result for this experiment
       res append s"$k\t$mdl\t$mdl_model\t$mdl_error\t${model.bestScore}\n"
+
+      ImageIO.write(model.bestBM.toImageGrouped(g), "gif", new File(s"$name-n$n-k$actualK-$noise-mdl-$k.gif"))
     }
 
     new FileReporter(res.result(), s"$name-n$n-k$actualK-$noise-mdl-curve.dat")

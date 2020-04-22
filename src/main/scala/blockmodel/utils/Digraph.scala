@@ -1,5 +1,7 @@
 package blockmodel.utils
 
+import java.io.{File, PrintWriter}
+
 import blockmodel.utils.Matrix._
 
 import scala.collection.mutable
@@ -31,6 +33,19 @@ class Digraph(val adjacencyMatrix: Array[Array[Boolean]], val names: Int => Stri
       i += 1
     }
     res
+  }
+
+  def saveTSV(filename: String): Unit = {
+    val res = new StringBuilder()
+    res append (0 until n map names mkString "\t")
+    res append "\n"
+    for (i <- 0 until n) {
+      res append (0 until n map adjacencyMatrix(i) map (if(_) 1 else 0) mkString "\t")
+      res append "\n"
+    }
+    val pw = new PrintWriter(new File(filename))
+    pw.write(res.toString())
+    pw.close
   }
 }
 
