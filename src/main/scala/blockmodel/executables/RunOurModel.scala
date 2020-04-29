@@ -2,7 +2,7 @@ package blockmodel.executables
 
 import java.io.File
 
-import blockmodel.search.PermutationBreakingBranching
+import blockmodel.search.{PermutationBreakingBranching, VertexDistanceHeuristic}
 import blockmodel.utils.Matrix._
 import blockmodel.utils.{BlockmodelSearchResult, Digraph}
 import blockmodel.{Blockmodel, BlockmodelCPModel}
@@ -10,24 +10,40 @@ import javax.imageio.ImageIO
 import javax.imageio.stream.FileImageOutputStream
 import org.rogach.scallop.ScallopConf
 import oscar.cp._
+import oscar.cp.searches.WeightedDegreeHelper
 
 import scala.concurrent.duration.{Duration, MINUTES}
 
 object RunOurModel extends App with BlockmodelSearchResult {
 
-  // todo add these as parameters to the command line app
-  object Heuristics extends Enumeration {
-    val binaryFirstFail, conflictOrderingSearch, dynamicSymmetryBreaking = Value
+  object SearchProcedure extends Enumeration {
+    val BINARY, BINARY_LAST_CONFLICT, CONFLICT, DYNAMIC_SYMMETRY_BREAKING = Value
+    def contains(s: String): Boolean = values.exists(_.toString == s)
+  }
+  object VarHeuris extends Enumeration {
+    val FIXED, MINDOM, WDEG, TEST = Value
+    def contains(s: String): Boolean = values.exists(_.toString == s)
   }
 
   class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-    val in = opt[String](required = true, descr = "<graph file>")
-    val k = opt[Int](required = true, descr = "#clusters")
+    val in = opt[String](required = true, argName = "graph file")
+    val k = opt[Int](required = true, argName = "#clusters", default = Some(2), validate = 1<=_)
+    val basicSymmetryBreaking = opt[Boolean](required = false, default = Some(false),
+      descr = "add constraints to break permutation symmetry by restricting the domain of the first vertex to " +
+        "cluster 0, of the second vertex to cluster 0 or 1, etc.")
+    val fixedSymmetryBreaking = opt[Boolean](required = false, default = Some(false),
+      descr = "add constraints to break permutation symmetry, such that the clusters appear in increasing order")
+    val searchProc = opt[String](required = false, default = Some(SearchProcedure.BINARY.toString),
+      descr = s"Search procedure, amongst ${SearchProcedure.values.mkString(", ")}.",
+      validate = SearchProcedure.contains).map(SearchProcedure.withName)
+    val varHeuris = opt[String](required = false, default = Some(VarHeuris.WDEG.toString),
+      descr = s"Variable ordering heuristic, amongst ${VarHeuris.values.mkString(", ")}.",
+      validate = VarHeuris.contains).map(VarHeuris.withName)
+    val ub = opt[Int](required = false, descr = "upper bound")
     val output = opt[String](required = true, descr = "output")
     val description = opt[String](required = false, descr = "description")
-    val time = opt[Int](required = false, descr = "time(seconds)")
-    val verbose = opt[Boolean](required = false, descr = "verbose")
-    val ub = opt[Int](required = false, descr = "upper bound")
+    val time = opt[Int](required = false, default = Some(60), descr = "time budget for the solver (in seconds)", validate = 1<=_)
+    val verbose = opt[Boolean](required = false, default = Some(false), descr = "verbose")
     verify()
   }
 
@@ -48,6 +64,8 @@ object RunOurModel extends App with BlockmodelSearchResult {
   var getTimeBudget = -1L
   var getSolution: Option[Blockmodel] = None
 
+  val verbose = conf.verbose.getOrElse(false)
+  if (verbose) println(conf.varHeuris)
 
   val startTime = System.currentTimeMillis()
   getGraphFile = conf.in.getOrElse("")
@@ -67,15 +85,54 @@ object RunOurModel extends App with BlockmodelSearchResult {
       add(totalCost <= conf.ub.getOrElse(n*n))
 
     //val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
-    search(
-      //PermutationBreakingBranching(C, blockmodelConstraint.biggestCostDelta, identity) ++ binaryMaxWeightedDegree(M.flatten.asInstanceOf[Array[CPIntVar]])
-      binaryMaxWeightedDegree(decisionVars)
-      //PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, identity)
-      // PermutationBreakingBranching(decisionVars, minDom(decisionVars), identity)
-      //conflictOrderingSearch(decisionVars, minDomMaxDegree(decisionVars), minVal(decisionVars))
-      //binaryLastConflict(decisionVars)
-      //binaryFirstFail(decisionVars)
-    )
+
+
+    val h = new VertexDistanceHeuristic(C, g)
+    //val hb = binaryIdx[Int](C, h.vertexMinDist, h.bestCluster) ++ binaryLastConflict(M.flatten)
+    search {
+      import SearchProcedure._
+      import VarHeuris._
+      conf.searchProc() match {
+        case BINARY => conf.varHeuris() match {
+          case FIXED => binary(decisionVars)
+          case MINDOM => binaryFirstFail(decisionVars)
+          case WDEG => binaryMaxWeightedDegree(decisionVars)
+          //case TEST => hb
+          case _ => binaryFirstFail(decisionVars)
+        }
+        case BINARY_LAST_CONFLICT => conf.varHeuris() match {
+          case FIXED => binaryLastConflict(decisionVars, identity, minVal(decisionVars))
+          case MINDOM => binaryLastConflict(decisionVars, minDom(decisionVars), minVal(decisionVars))
+          case WDEG => {
+            val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
+            binaryLastConflict(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, minVal(decisionVars))
+          }
+          case _ => binaryLastConflict(decisionVars)
+        }
+        case CONFLICT => conf.varHeuris() match {
+          case FIXED => conflictOrderingSearch(decisionVars, identity, minVal(decisionVars))
+          case MINDOM => conflictOrderingSearch(decisionVars, minDom(decisionVars), minVal(decisionVars))
+          case WDEG => {
+            val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
+            conflictOrderingSearch(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, minVal(decisionVars))
+          }
+          case _ => conflictOrderingSearch(decisionVars, minDom(decisionVars), minVal(decisionVars))
+        }
+        case DYNAMIC_SYMMETRY_BREAKING => conf.varHeuris() match {
+          case FIXED => PermutationBreakingBranching(C, identity, identity) ++ binaryLastConflict(M.flatten)
+          case MINDOM => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+          case WDEG => {
+            val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
+            PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, identity)
+          }
+          case _ => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+        }
+        case _ => {
+          if (verbose) println("no special heuristics given, doing binary max weighted degree")
+          binaryMaxWeightedDegree(decisionVars)
+        }
+      }
+    }
     onSolution {
       val time = System.currentTimeMillis() - startTime
       getTimeOfSolutions :+= time
