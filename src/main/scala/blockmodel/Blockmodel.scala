@@ -164,7 +164,7 @@ object Blockmodel {
     */
   def starStructure(size: Int, directed: Boolean = true): Array[Array[Boolean]] = {
     val res = Array.fill(size, size)(false)
-    for (i <- 0 until size-1) {
+    for (i <- 0 until size) {
       res(i)(i) = true
       res(0)(i) = true
       if (!directed) res(i)(0) = true

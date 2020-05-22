@@ -36,7 +36,7 @@ object RunMDLScoreCurveSynthetic extends App {
     val res = new StringBuilder()
     res append "k\tmdl\tmodel\terror\tcost\n"
 
-    val g = Digraph.randomWithImage(blockmodel, n, rng, noise)
+    val (g, _) = Digraph.randomWithImage(blockmodel, n, rng, noise)
     g.saveTSV(s"$name-n$n-k$actualK-$noise-graph.tsv")
 
     for (k <- 1 to maxK) {
@@ -46,7 +46,7 @@ object RunMDLScoreCurveSynthetic extends App {
         val decisionVars: Array[CPIntVar] = C ++ M.cells
         minimize(totalCost)
         search {
-          PermutationBreakingBranching(C, blockmodelConstraint.biggestCostDelta, identity) ++ binaryMaxWeightedDegree(M.flatten.asInstanceOf[Array[CPIntVar]])
+          PermutationBreakingBranching(C, blockmodelConstraint.biggestCostDelta, (_,_)=>0) ++ binaryMaxWeightedDegree(M.flatten.asInstanceOf[Array[CPIntVar]])
         }
         onSolution {
           val solC: Array[Int] = C.map(_.value)

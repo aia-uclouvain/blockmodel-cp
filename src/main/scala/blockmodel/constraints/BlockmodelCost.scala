@@ -274,11 +274,28 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
 
   def smallestCostDelta(vertex: Int): Int = C(vertex).minBy(delta(vertex)(_).value)
 
+  def maxCostDelta(vertex: Int): Int = C(vertex).map(delta(vertex)(_).value).max
+  def minCostDelta(vertex: Int): Int = C(vertex).map(delta(vertex)(_).value).min
+  def sumCostDelta(vertex: Int): Int = C(vertex).map(delta(vertex)(_).value).sum
+
   def worstFirstValueOrder(vertex: Int): Array[Int] =
     C(vertex).toArray.sortBy(-delta(vertex)(_).value)
 
   def bestFirstValueOrder(vertex: Int): Array[Int] =
     C(vertex).toArray.sortBy(delta(vertex)(_).value)
+
+  def MVarHeuris(i: Int): Int = {
+    val x = i/k
+    val y = i%k
+    min(nb0Bound(x)(y),nb1Bound(x)(y))
+  }
+
+  def MValHeuris(i: Int): Int = {
+    val x = i/k
+    val y = i%k
+    if (nb0Bound(x)(y) > nb1Bound(x)(y)) 0
+    else 1
+  }
 
   override def propagate(): Unit = {
     updateCounters()

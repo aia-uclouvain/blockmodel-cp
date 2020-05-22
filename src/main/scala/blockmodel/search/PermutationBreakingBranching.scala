@@ -4,7 +4,7 @@ import oscar.algo.search.{Branching, Decision}
 import oscar.cp._
 
 object PermutationBreakingBranching {
-  def apply[T](variables: Array[CPIntVar], varHeuristic: Int => Int, valHeuristic: Int => Int): PermutationBreakingBranching =
+  def apply[T](variables: Array[CPIntVar], varHeuristic: Int => Int, valHeuristic: (Int, Int) => Int): PermutationBreakingBranching =
     new PermutationBreakingBranching(variables, varHeuristic, valHeuristic)
 }
 
@@ -17,7 +17,7 @@ object PermutationBreakingBranching {
   */
 class PermutationBreakingBranching(variables: Array[CPIntVar],
                                    varHeuristic: Int => Int,
-                                   valHeuristic: Int => Int) extends Branching {
+                                   valHeuristic: (Int, Int) => Int) extends Branching {
   private val context = variables(0).context
 
   private def selectMin[T](list: Array[T])(condition: T => Boolean)(order: T => Int): Option[T] = {
@@ -42,7 +42,7 @@ class PermutationBreakingBranching(variables: Array[CPIntVar],
       case Some(i) => {
         val x = variables(i)
         val maxUsed = variables.maxBoundOrElse(-1)
-        (x.getMin to maxUsed+1).filter(x.hasValue).sortBy(valHeuristic).map(Decision.assign(x, _))
+        (x.getMin to maxUsed+1).filter(x.hasValue).sortBy(valHeuristic(i, _)).map(Decision.assign(x, _))
       }
       case None => noAlternative
     }

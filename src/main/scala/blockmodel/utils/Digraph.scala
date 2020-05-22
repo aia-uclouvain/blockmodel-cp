@@ -2,6 +2,7 @@ package blockmodel.utils
 
 import java.io.{File, PrintWriter}
 
+import blockmodel.Blockmodel
 import blockmodel.utils.Matrix._
 
 import scala.collection.mutable
@@ -97,7 +98,7 @@ object Digraph {
     * @param error the proportion of entries of the matrix to be flipped. Must be between 0.0 and 1.0
     * @return a digraph matching the image matrix M with the specified proportion of error
     */
-  def randomWithImage(M: Array[Array[Boolean]], n: Int, rng: Random = new Random(), error: Double = 0.0): Digraph = {
+  def randomWithImage(M: Array[Array[Boolean]], n: Int, rng: Random = new Random(), error: Double = 0.0): (Digraph, Blockmodel) = {
     val b = M.length
     val matrix = Array.fill(n,n)(false)
 
@@ -112,7 +113,7 @@ object Digraph {
     while (wrongIndices.size < n*n*error) wrongIndices.add((rng.nextInt(n), rng.nextInt(n)))
     for ((i,j) <- wrongIndices) matrix(i)(j) = !matrix(i)(j)
 
-    new Digraph(matrix)
+    (new Digraph(matrix), new Blockmodel(σ.map(_%b).toArray, M))
   }
 
   /*

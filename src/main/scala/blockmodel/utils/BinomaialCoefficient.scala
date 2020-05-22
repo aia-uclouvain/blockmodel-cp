@@ -2,7 +2,7 @@ package blockmodel.utils
 
 import scala.math.log
 
-object BinomaialCoefficient  extends App {
+object BinomaialCoefficient {
   def logC(n: Int, k: Int): Double = {
     if (k < 0 || k > n)   throw new IllegalArgumentException()
     if (k == 0 || k == n) return 0
@@ -35,4 +35,26 @@ object BinomaialCoefficient  extends App {
     }
     res
   }
+
+  /** binary search for the last index of `arr` where a condition `cond` holds
+    * mapping cond on the array should be monotonic, i.e.
+    * arr.map(cond) = [true true ... true false false ... false]
+    * if the conditions holds for no value, -1 is returned
+    *  e.g. search(Array(false, false), identity(_)) = -1
+    * if the condition holds for all values, the last index is returned
+    *  e.g. search((0 until 100).toArray, _ > 0) = 100
+    *
+    * this is useful to search through the binomial coefficient tables
+    */
+  def search[T](arr: Array[T], cond: T => Boolean): Int = {
+    def s(start: Int = 0, end: Int = arr.length -1): Int = {
+      val mid = start + (end-start)/2
+      if (!cond(arr(start)))     start - 1
+      else if (cond(arr(end)))   end
+      else if (cond(arr(mid)))   s(mid+1, end)
+      else                       s(start, mid-1) // narrow the field
+    }
+    s()
+  }
+
 }

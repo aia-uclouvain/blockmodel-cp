@@ -21,7 +21,7 @@ object RunOurModel extends App with BlockmodelSearchResult {
     def contains(s: String): Boolean = values.exists(_.toString == s)
   }
   object VarHeuris extends Enumeration {
-    val FIXED, MINDOM, WDEG, TEST = Value
+    val FIXED, MINDOM, WDEG, HEURISTIC, TEST = Value
     def contains(s: String): Boolean = values.exists(_.toString == s)
   }
 
@@ -84,20 +84,19 @@ object RunOurModel extends App with BlockmodelSearchResult {
     if (conf.ub.isDefined)
       add(totalCost <= conf.ub.getOrElse(n*n))
 
-    //val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
-
-
-    val h = new VertexDistanceHeuristic(C, g)
-    //val hb = binaryIdx[Int](C, h.vertexMinDist, h.bestCluster) ++ binaryLastConflict(M.flatten)
     search {
       import SearchProcedure._
       import VarHeuris._
-      conf.searchProc() match {
+      val b: oscar.algo.search.Branching = conf.searchProc() match {
         case BINARY => conf.varHeuris() match {
           case FIXED => binary(decisionVars)
           case MINDOM => binaryFirstFail(decisionVars)
           case WDEG => binaryMaxWeightedDegree(decisionVars)
-          //case TEST => hb
+          case HEURISTIC => binaryIdx[Int](C, blockmodelConstraint.maxCostDelta(_), blockmodelConstraint.smallestCostDelta(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+          case TEST => {
+            val h = new VertexDistanceHeuristic(C, k, g)
+            binaryIdx[Int](C, h.vertexMaxDist(_), h.bestCluster(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+          }
           case _ => binaryFirstFail(decisionVars)
         }
         case BINARY_LAST_CONFLICT => conf.varHeuris() match {
@@ -119,19 +118,27 @@ object RunOurModel extends App with BlockmodelSearchResult {
           case _ => conflictOrderingSearch(decisionVars, minDom(decisionVars), minVal(decisionVars))
         }
         case DYNAMIC_SYMMETRY_BREAKING => conf.varHeuris() match {
-          case FIXED => PermutationBreakingBranching(C, identity, identity) ++ binaryLastConflict(M.flatten)
-          case MINDOM => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+          case FIXED => PermutationBreakingBranching(C, identity, (_,_) => 0) ++ binaryLastConflict(M.flatten)
+          case MINDOM => PermutationBreakingBranching(C, minDom(C), (_,_) => 0) ++ binaryLastConflict(M.flatten)
           case WDEG => {
             val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
-            PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, identity)
+            PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, (_,_) => 0)
           }
-          case _ => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+          case HEURISTIC => PermutationBreakingBranching(C, i => -blockmodelConstraint.sumCostDelta(i), blockmodelConstraint.delta(_, _)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+          case TEST => {
+            val h = new VertexDistanceHeuristic(C, k, g)
+            PermutationBreakingBranching(C, h.vertexMinDist(_), h.distToCluster(_,_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+
+          }
+          case _ => PermutationBreakingBranching(C, minDom(C), (_,_) => 0) ++ binaryLastConflict(M.flatten)
         }
         case _ => {
           if (verbose) println("no special heuristics given, doing binary max weighted degree")
           binaryMaxWeightedDegree(decisionVars)
         }
       }
+
+      b
     }
     onSolution {
       val time = System.currentTimeMillis() - startTime

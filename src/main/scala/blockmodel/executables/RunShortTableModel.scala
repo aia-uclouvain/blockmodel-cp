@@ -118,13 +118,13 @@ object RunShortTableModel extends App with BlockmodelSearchResult {
             case _      => conflictOrderingSearch(decisionVars, minDom(decisionVars), minVal(decisionVars))
           }
         case DYNAMIC_SYMMETRY_BREAKING => conf.varHeuris() match {
-          case FIXED  => PermutationBreakingBranching(C, identity, identity) ++ binaryLastConflict(M.flatten)
-          case MINDOM => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+          case FIXED  => PermutationBreakingBranching(C, identity, (_,_)=>0) ++ binaryLastConflict(M.flatten)
+          case MINDOM => PermutationBreakingBranching(C, minDom(C), (_,_)=>0) ++ binaryLastConflict(M.flatten)
           case WDEG   => {
             val helper = new WeightedDegreeHelper(decisionVars.head.store, decisionVars, 0.99)
-            PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, identity)
+            PermutationBreakingBranching(decisionVars, i => -(helper.getWeightedDegree(decisionVars(i)) * 1000).round.toInt, (_,_)=>0)
           }
-          case _      => PermutationBreakingBranching(C, minDom(C), identity) ++ binaryLastConflict(M.flatten)
+          case _      => PermutationBreakingBranching(C, minDom(C), (_,_)=>0) ++ binaryLastConflict(M.flatten)
         }
         case _ => {
           if (verbose) println("no special heuristics given, doing binary max weighted degree")
