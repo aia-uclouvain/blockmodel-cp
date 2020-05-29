@@ -20,7 +20,7 @@ class JsonBuilder {
   def insert(key: String, value: String): Unit = {
     content += (textSep+key+textSep+valSep+value)
   }
-  def add(key: String, value: String): Unit = insert(key, textSep+value+textSep)
+  def add(key: String, value: String): Unit = insert(key, textSep+value.replaceAll("\n", "\\n")+textSep)
   def add(key: String, value: Int): Unit = insert(key, value.toString)
   def add(key: String, value: Float): Unit = insert(key, value.toString)
   def add(key: String, table: Array[Int]): Unit = insert(key, listSep(0)+table.mkString(listSep(2))+listSep(1))

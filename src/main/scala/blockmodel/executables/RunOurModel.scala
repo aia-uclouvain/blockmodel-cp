@@ -92,10 +92,10 @@ object RunOurModel extends App with BlockmodelSearchResult {
           case FIXED => binary(decisionVars)
           case MINDOM => binaryFirstFail(decisionVars)
           case WDEG => binaryMaxWeightedDegree(decisionVars)
-          case HEURISTIC => binaryIdx[Int](C, blockmodelConstraint.maxCostDelta(_), blockmodelConstraint.smallestCostDelta(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+          case HEURISTIC => binaryIdx[Int](C, -blockmodelConstraint.sumCostDelta(_), blockmodelConstraint.smallestCostDelta(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
           case TEST => {
             val h = new VertexDistanceHeuristic(C, k, g)
-            binaryIdx[Int](C, h.vertexMaxDist(_), h.bestCluster(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+            binaryIdx[Double](C, h.vertexMaxDist(_), h.bestCluster(_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
           }
           case _ => binaryFirstFail(decisionVars)
         }
@@ -127,7 +127,8 @@ object RunOurModel extends App with BlockmodelSearchResult {
           case HEURISTIC => PermutationBreakingBranching(C, i => -blockmodelConstraint.sumCostDelta(i), blockmodelConstraint.delta(_, _)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
           case TEST => {
             val h = new VertexDistanceHeuristic(C, k, g)
-            PermutationBreakingBranching(C, h.vertexMinDist(_), h.distToCluster(_,_)) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
+            val rng = new scala.util.Random(0)
+            PermutationBreakingBranching(C, h.vertexMinDist(_).toInt, h.distToCluster(_,_).toInt) ++ binaryIdx(M.flatten, blockmodelConstraint.MVarHeuris(_), blockmodelConstraint.MValHeuris(_))
 
           }
           case _ => PermutationBreakingBranching(C, minDom(C), (_,_) => 0) ++ binaryLastConflict(M.flatten)
@@ -148,11 +149,12 @@ object RunOurModel extends App with BlockmodelSearchResult {
       val solM: Array[Array[Boolean]] = M.mapCells(_.value == 1)
       val blockmodel = new Blockmodel(solC, solM)
       getSolution = Some(blockmodel)
-      println("***")
-      println(blockmodel)
-      println(cost.toStringMatrix)
-      println("totalcost is " + totalCost)
-      println(blockmodel.toStringGrouped(g))
+      if (verbose) {
+        println("***")
+        println(blockmodel)
+        println(cost.toStringMatrix)
+        println("totalcost is " + totalCost)
+      }
     }
   }
 

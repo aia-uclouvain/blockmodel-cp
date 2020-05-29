@@ -37,6 +37,22 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
   //def mdl(g: Digraph): Int =(n*k)+(k*k)+(2*cost(g))
   //def mdl(g: Digraph): Int =(n*k)+(k*k)+(cost(g) * 2 * math.log(n)/math.log(2)).toInt
 
+  def costOfVertex(v: Int, g: Digraph): Int = {
+    val row = (0 until n).foldRight(0){case (i,sum) => sum  + (if(g(v)(i) == M( C(v) )( C(i) )) 0 else 1) }
+    val col = (0 until n).foldRight(0){case (i, sum) => sum + (if(g(i)(v) == M( C(i) )( C(v) )) 0 else 1) }
+    row + col
+  }
+
+  def costOfCluster(c: Int, g: Digraph): Int = {
+    var cost = 0
+    for (i <- 0 until n; j <- 0 until n if C(i)==c || C(j) == c) {
+      cost += (if (g(i)(j) == M(C(i))(C(j))) 0 else 1)
+    }
+    cost
+  }
+
+  def worstCluster(g: Digraph): Int = (0 until k).maxBy(costOfCluster(_, g))
+
   override def hashCode(): Int = toString.hashCode
   def sameElements(a: Array[Int], b: Array[Int]): Boolean = ! a.indices.exists(i => a(i) != b(i))
   override def equals(obj: Any): Boolean = obj match {
@@ -185,4 +201,18 @@ object Blockmodel {
     val C = Array.tabulate(n)(i => i % k)
     new Blockmodel(C, M)
   }
+
+  def random(g: Digraph, k: Int, rng: Random): Blockmodel = {
+    val vertices = rng.shuffle(Array.tabulate(g.n)(identity))
+    val C: Array[Int] = Array.tabulate(g.n)(i => vertices(i)%k)
+    val cluster = Array.tabulate(k)(c => vertices.filter(C(_)==c))
+    val M: Array[Array[Boolean]] = Array.tabulate(k,k)((c,d) => {
+      val nb1 = cluster(c).zip(cluster(d)).count{case (i,j) => g(i)(j)}
+      // M(c)(d) is true if there are more ones than not
+      nb1 > (cluster(c).length * cluster(d).length)-nb1
+    })
+
+    new Blockmodel(C, M)
+  }
+
 }
