@@ -2,35 +2,43 @@ package blockmodel.executables
 
 import java.io.File
 
-import blockmodel.search.{PermutationBreakingBranching, VertexDistanceHeuristic}
 import blockmodel.utils.Matrix._
 import blockmodel.utils.{BlockmodelSearchResult, Digraph}
 import blockmodel.{Blockmodel, BlockmodelCPModel}
 import javax.imageio.ImageIO
 import org.rogach.scallop.ScallopConf
 import oscar.cp._
-import oscar.cp.searches.WeightedDegreeHelper
-
 import scala.util.Random
 
+/**
+  * Executable to run the LNS search procedure. Run with --help for usage information
+  */
 object RunLNS extends App with BlockmodelSearchResult {
-
   class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-    val in = opt[String](required = true, argName = "graph file")
-    val k = opt[Int](required = true, argName = "#clusters", default = Some(2), validate = 1<=_)
-    val restarts = opt[Int](required = false, descr = "number of restarts", default = Some(10), validate = 1<=_)
-    val nbFail = opt[Int](required = false, descr = "max number of failed nodes before aborting run",
-      default = Some(1000), validate = 1 <= _)
-    val failedRuns = opt[Int](required = false, descr = "max number of consecutive failed runs before a restart",
-      default = Some(100), validate = 1 <= _)
-    val alpha = opt[Double](required = false, descr = "initial relaxation factor alpha", default = Some(0.05), validate = 0<_)
-    val goodFirstSol = opt[Boolean](required = false)
-    val seed = opt[Int](required = false, descr = "seed for the random number generator")
-    val output = opt[String](required = true, descr = "output")
-    val visual = opt[Boolean](required = false)
-    val description = opt[String](required = false, descr = "description")
-    val time = opt[Int](required = false, default = Some(60), descr = "time budget for the solver (in seconds)", validate = 1<=_)
-    val verbose = opt[Boolean](required = false, default = Some(false), descr = "verbose")
+    val in = opt[String](required = true, argName = "graph file",
+      descr = "File describing the graph to process. Data must be given in a text file containing tab " +
+        "separated values, with the first line being the name of the vertices and subsequent lines being the " +
+        "adjacency matrix where a 1 indicates a tie and a 0 no tie.")
+    val k = opt[Int](required = true, argName = "#clusters", default = Some(2), validate = 1<=_,
+      descr = "Number of clusters in the resulting block model.")
+    val restarts = opt[Int](required = false, default = Some(10), validate = 1<=_,
+      descr = "Number of complete restarts to perform")
+    val nbFail = opt[Int](required = false, default = Some(1000), validate = 1 <= _,
+      descr = "Max number of failed nodes before aborting run")
+    val failedRuns = opt[Int](required = false, default = Some(100), validate = 1 <= _,
+      descr = "Max number of consecutive failed runs before a restart")
+    val alpha = opt[Double](required = false, default = Some(0.05), validate = 0<_,
+      descr = "Initial relaxation factor alpha. This is the initial fraction of vertices being relaxed")
+    val seed = opt[Int](required = false,
+      descr = "Seed for the random number generator")
+    val output = opt[String](required = true, descr = "File in which statistics about the search will be written, in " +
+      "JSON format.")
+    val visual = opt[Boolean](required = false, descr = "If this is set, an image of the resulting block model will" +
+      " be generated, and saved to [output].gif")
+    val time = opt[Int](required = false, default = Some(60), descr = "Time budget for the solver in seconds.",
+      validate = 1<=_)
+    val verbose = opt[Boolean](required = false, default = Some(false),
+      descr = "If set, gives progress update during the search")
     verify()
   }
 
@@ -39,8 +47,8 @@ object RunLNS extends App with BlockmodelSearchResult {
   // BlockmodelSearchResult variables
   var getName = ""
   var getDescripton = ""
-  var getGraphFile = ""
-  var getK = -1
+  var getGraphFile = conf.in()
+  var getK = conf.k()
   var getTimeOfSolutions = Array()
   var getScoreOfSolutions = Array()
   var getTimeToComplete = -1L
@@ -48,17 +56,12 @@ object RunLNS extends App with BlockmodelSearchResult {
   var getScoreOfBest = -1.0f
   var getNNodes = -1L
   var isCompleted = false
-  var getTimeBudget = -1L
+  var getTimeBudget = conf.time()
   var getSolution: Option[Blockmodel] = None
 
   val verbose = conf.verbose.getOrElse(false)
 
   val startTime = System.currentTimeMillis()
-  getGraphFile = conf.in()
-  getK = conf.k()
-  //getName = config.output.getOrElse("")
-  getTimeBudget = conf.time()
-  getDescripton = conf.description.getOrElse("")
 
   val g = Digraph.fromTSV(getGraphFile)
   if (verbose) println(s"loaded graph $getGraphFile with ${g.n} nodes and ${g.e} edges")
@@ -86,7 +89,6 @@ object RunLNS extends App with BlockmodelSearchResult {
   }
 
   // LNS search procedure
-
   var nbFail = conf.nbFail()
   var α = conf.alpha()
   val random = conf.seed.toOption match {
@@ -105,18 +107,10 @@ object RunLNS extends App with BlockmodelSearchResult {
 
     if (verbose) println("looking for initial solution")
     val stats = model.solver.startSubjectTo(nSols = 1, timeLimit = getTimeLeft) {
-      if (conf.goodFirstSol.getOrElse(false)) {
-        model.solver.search({
-          val h = new VertexDistanceHeuristic(model.C, model.k, g)
-          binaryIdx[Double](model.C, i => h.vertexMinDist(i) + random.nextDouble(), h.bestCluster(_)) ++
-            binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
-        })
-      } else {
-        model.solver.search(
-          conflictOrderingSearch(model.C, model.blockmodelConstraint.minCostDelta(_) + random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
-            binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
-        )
-      }
+      model.solver.search(
+        conflictOrderingSearch(model.C, model.blockmodelConstraint.minCostDelta(_) + random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
+          binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
+      )
     }
 
     if (stats.nSols == 0) {
@@ -164,19 +158,23 @@ object RunLNS extends App with BlockmodelSearchResult {
     if (verbose) println("restarting")
   }
 
-  getSolution.foreach(s => {
-    println(s)
+  getSolution match {
+    case Some(s) => {
+      println("Solution found:")
+      println(s)
 
-    getTimeToBest = getTimeOfSolutions.last
-    getScoreOfBest = getScoreOfSolutions.last
-    println(getScoreOfBest)
+      getTimeToBest = getTimeOfSolutions.last
+      getScoreOfBest = getScoreOfSolutions.last
+      println(s"Cost of the solution: $getScoreOfBest")
 
-    if (g.n < 30) println(s.toStringGrouped(g))
-    if (conf.visual.getOrElse(false)) {
-      println("generating image")
-      ImageIO.write(s.toImageGrouped(g), "gif", new File("./out.gif"))
+      if (g.n < 30) println(s.toStringGrouped(g))
+      if (conf.visual.getOrElse(false)) {
+        println("generating image")
+        ImageIO.write(s.toImageGrouped(g), "gif", new File("./out.gif"))
+      }
     }
-  })
+    case None => println("No solution found.")
+  }
 
 
   conf.output.toOption match {

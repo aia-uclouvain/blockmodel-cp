@@ -11,6 +11,9 @@ import org.rogach.scallop.ScallopConf
 import oscar.cp._
 import oscar.cp.searches.WeightedDegreeHelper
 
+/**
+  * Executable for our CP solver for block modeling.  Run with --help for usage information
+  */
 object RunCPModel extends App with BlockmodelSearchResult {
   object SearchProcedure extends Enumeration {
     val BINARY, BINARY_LAST_CONFLICT, CONFLICT, DYNAMIC_SYMMETRY_BREAKING = Value
@@ -154,6 +157,7 @@ object RunCPModel extends App with BlockmodelSearchResult {
     case Some(s) => {
       println("Solution found:")
       println(s)
+      if (g.n < 30) println(s.toStringGrouped(g))
       if (conf.visual.getOrElse(false)) {
         println(s"generating image ${conf.output()}.gif")
         ImageIO.write(s.toImageGrouped(g), "gif", new File(conf.output()+".gif"))
