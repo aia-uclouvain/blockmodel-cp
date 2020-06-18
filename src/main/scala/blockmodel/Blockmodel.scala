@@ -9,17 +9,23 @@ import utils.Matrix._
 import scala.util.Random
 
 /**
-  * class representing a block model, with its clusters and its image matrix.
+  * class representing a block model, storing its clusters and its image matrix.
   * @param C the cluster index for every vertex in the graph. vertex v is in cluster i <=> C(v)=i
   * @param M image matrix for the block model
   */
 class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
-  val n = C.length // number of vertices
-  val k = M.length // number of clusters
+  val n: Int = C.length // number of vertices
+  val k: Int = M.length // number of clusters
   for (row <- M if row.length != k) throw new IllegalArgumentException("M is not a square matrix")
   for (c <- C if c < 0 || c >= k) throw new IllegalArgumentException(s"$c cannot be a vertex label if k = $k")
 
-  def Σij(ito: Int, jto: Int)(f: (Int, Int) => Int): Int = {
+  lazy val modelDescriptionLength: Double = {
+    import scala.math.log
+    log(n) / log(2) + n * log(k) / log(2) + k * k + log(n * n) / log(2)
+  }
+
+  // utility function for summation
+  private def Σij(ito: Int, jto: Int)(f: (Int, Int) => Int): Int = {
     var i = 0
     var sum = 0
     while (i < ito) {
@@ -33,16 +39,38 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
     sum
   }
 
-  def cost(g: Digraph): Int = Σij(n,n)((i,j) => if(g(i)(j) == M( C(i) )( C(j) )) 0 else 1)
-  //def mdl(g: Digraph): Int =(n*k)+(k*k)+(2*cost(g))
-  //def mdl(g: Digraph): Int =(n*k)+(k*k)+(cost(g) * 2 * math.log(n)/math.log(2)).toInt
-
-  def costOfVertex(v: Int, g: Digraph): Int = {
-    val row = (0 until n).foldRight(0){case (i,sum) => sum  + (if(g(v)(i) == M( C(v) )( C(i) )) 0 else 1) }
-    val col = (0 until n).foldRight(0){case (i, sum) => sum + (if(g(i)(v) == M( C(i) )( C(v) )) 0 else 1) }
-    row + col
+  def cost(g: Digraph): Int = {
+    var i = 0
+    var sum = 0
+    while (i < n) {
+      var j = 0
+      while (j < n) {
+        if (g(i)(j) != M( C(i) )( C(j) )) sum += 1
+        j += 1
+      }
+      i += 1
+    }
+    sum
   }
 
+  def costOfVertices(g: Digraph): Array[Int] = {
+    val res = Array.fill(n)(0)
+    for(i<-0 until n;j<-0 until n if g(i)(j) != M(C(i))(C(j))) {
+      res(i) += 1
+      res(j) += 1
+    }
+    res
+  }
+  def costOfVertex(v: Int, g: Digraph): Int = {
+    var cost = 0
+    var i = 0
+    while (i < n) {
+      if(g(v)(i) != M( C(v) )( C(i) )) cost += 1
+      if(g(i)(v) != M( C(i) )( C(v) )) cost += 1
+      i += 1
+    }
+    cost
+  }
   def costOfCluster(c: Int, g: Digraph): Int = {
     var cost = 0
     for (i <- 0 until n; j <- 0 until n if C(i)==c || C(j) == c) {
@@ -87,7 +115,7 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
         groupedVertices.map(group => "━" * ((cellSize + 1) * group.length - 1)).mkString("╋")
       result append "\n"
       for (i <- group) {
-        result append nameFmt.format(g.names(i)+" "+(i)) + "┃"
+        result append nameFmt.format(g.names(i)+" "+i) + "┃"
         result append groupedVertices.map(group =>
           group.map(j =>
             if (g(i)(j)) fmt.format("1") else fmt.format("·")
@@ -99,6 +127,7 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
     result.toString()
   }
 
+  // returns an image equivalent to toStringGrouped, with clusters separated by red lines and ties shown as black pixels
   def toImageGrouped(g: Digraph): BufferedImage = {
     val size = g.n + k
     val img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
@@ -188,6 +217,11 @@ object Blockmodel {
     res
   }
 
+  /**
+    * generates an image with a community structure (i.e. each cluster is a clique)
+    * @param size number of clusters in the image graph
+    * @return the adjacency matrix for the image graph
+    */
   def communityStructure(size: Int): Array[Array[Boolean]] = Array.tabulate(size, size)((i,j) => i==j)
 
   def randomWithImageEqualClusterSize(M: Array[Array[Boolean]], n: Int, rng: Random = new Random()): Blockmodel = {

@@ -42,22 +42,30 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
 
   private val unboundVertices = new ReversibleSparseSet(s, 0, n-1)
 
+  // nb1Bound(c,d) is the number of edges between vertices bound to cluster c and vertices bound to cluster d
+  // i.e. the number of 1s in the submatrix whose lines are vertices bound to c and columns bound to d
   private val nb1Bound = Array.fill(k,k)(new ReversibleInt(s, 0))
+  // the number of 0 in the same submatrix. It will always be #{(v,w) | C(v) = c && C(w) = d} - nb1Bound(c,d).
   private val nb0Bound = Array.fill(k,k)(new ReversibleInt(s, 0))
+  // nb1UnboundCol(c,v) is the number of edges between vertices bound to cluster c and vertex v, i.e. the number of 1
+  // in the subcolumn whose lines are vertices bound to c and whose column index is v. We only keep the value up to date
+  // for unbound vertices.
   private val nb1UnboundCol = Array.fill(k,n)(new ReversibleInt(s, 0))
   private val nb0UnboundCol = Array.fill(k,n)(new ReversibleInt(s, 0))
+  // nb1UnboundRow is the number of edges between vertex v and vertices bound to cluster c, i.e. the number of 1 in the
+  // subrow whose row index is v and columns are vertices bound to c. We only keep the value up to date for unbound
+  // vertices.
   private val nb1UnboundRow = Array.fill(n,k)(new ReversibleInt(s, 0))
   private val nb0UnboundRow = Array.fill(n,k)(new ReversibleInt(s, 0))
 
+  // delta(v,c) will store the lower bound on the cost added to the solution when assigning vertex v to cluster c
   private val delta = Array.fill(n,k)(new ReversibleInt(s, 0))
 
   def delta(i: Int, r: Int): Int = delta(i)(r).value
 
-
   override def associatedVars(): Iterable[CPVar] = M.toVector.flatten ++ C ++ cost.toVector.flatten :+ totalCost
 
   override def setup(l: CPPropagStrength): Unit = {
-
     for (r <- 0 until k; s <- 0 until k) {
       costsDeltas(r)(s) = cost(r)(s).callPropagateOnChangesWithDelta(this)
       M(r)(s).callPropagateWhenBind(this)
@@ -68,9 +76,9 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
     totalCost.callPropagateWhenBoundsChange(this)
 
     propagate()
-
   }
 
+  // update the different counters of 1s and 0s after vertices are bound.
   def updateCounters(): Unit = {
     var x = unboundVertices.size-1
     while (x >= 0) {
@@ -105,7 +113,6 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
 
         if (X(i)(i))  nb1Bound(r)(r) += 1
         else          nb0Bound(r)(r) += 1
-
       }
       x -= 1
     }
@@ -170,7 +177,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
       totalCost.updateMax(minTotalCost)
   }
 
-  def filterB(): Unit = {
+  def filterM(): Unit = {
     var r = 0
     while (r < k) {
       var s = 0
@@ -284,12 +291,16 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
   def bestFirstValueOrder(vertex: Int): Array[Int] =
     C(vertex).toArray.sortBy(delta(vertex)(_).value)
 
+  // variable heuristic for the M variables, to be used with oscar's Idx algorithms. Given the index of a M variable
+  // in M.flatten, it will give the lowest cost achievable for that variable
   def MVarHeuris(i: Int): Int = {
     val x = i/k
     val y = i%k
     min(nb0Bound(x)(y),nb1Bound(x)(y))
   }
 
+  // value heuristic for the M variables, to be used with oscar's Idx algorithms. Given the index of a M variable
+  // in M.flatten, it will give the value (0 or 1) that will minimize the cost if bound to it.
   def MValHeuris(i: Int): Int = {
     val x = i/k
     val y = i%k
@@ -301,7 +312,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
     updateCounters()
     if(verbose) printState()
     filterCost()
-    filterB()
+    filterM()
     filterC()
   }
 
@@ -333,21 +344,5 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
     })
 
     println(counts.toStringMatrix.replace('0', '·'))
-  }
-
-  def heuristic(): Seq[search.Alternative] = {
-    // take the unbound vertex with minimal domain size if it exists, None otherwise
-    C.filterNot(_.isBound).reduceOption((a, b) => if (a.size <= b.size) a else b) match {
-      case Some(v) => // there is an unbound vertex, so we bind it first
-        val maxUsed = C.maxBoundOrElse(-1)
-        branchAll((0 to maxUsed + 1).filter(v.hasValue))(value => s.add(v === value))
-      case None => // all vertices have been bound, we bind the M values
-        (for(x <- 0 until k; y <- 0 until k) yield (x,y)).find({case (x,y) => !M(x)(y).isBound}) match {
-          case Some((x,y)) =>
-            if (nb0Bound(x)(y) < nb1Bound(x)(y)) branch(s.add(M(x)(y) === 1))(s.add(M(x)(y) !== 1))
-            else branch(s.add(M(x)(y) === 0))(s.add(M(x)(y) !== 0))
-          case None => noAlternative
-        }
-    }
   }
 }

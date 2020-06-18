@@ -23,6 +23,7 @@ object RunLNS extends App with BlockmodelSearchResult {
       default = Some(1000), validate = 1 <= _)
     val failedRuns = opt[Int](required = false, descr = "max number of consecutive failed runs before a restart",
       default = Some(100), validate = 1 <= _)
+    val alpha = opt[Double](required = false, descr = "initial relaxation factor alpha", default = Some(0.05), validate = 0<_)
     val goodFirstSol = opt[Boolean](required = false)
     val seed = opt[Int](required = false, descr = "seed for the random number generator")
     val output = opt[String](required = true, descr = "output")
@@ -66,18 +67,18 @@ object RunLNS extends App with BlockmodelSearchResult {
     var bestBM: Option[Blockmodel] = None
     minimize(totalCost)
     onSolution {
-      bestBM = Some(getBlockmodel())
+      bestBM = Some(getBlockmodel)
       if (getSolution.isEmpty || getSolution.get.cost(g) > totalCost.value) {
         val time = System.currentTimeMillis() - startTime
         getTimeOfSolutions :+= time
         getScoreOfSolutions :+= totalCost.value
-        val blockmodel = getBlockmodel()
+        val blockmodel = getBlockmodel
         getSolution = Some(blockmodel)
         if (verbose) {
           println("***")
           println(blockmodel)
           println(cost.toStringMatrix)
-          println("totalcost is " + totalCost)
+          println("totalcost is " + totalCost + " (" + (totalCost.value*100/n/n) + "%)")
         }
       }
     }
@@ -87,7 +88,7 @@ object RunLNS extends App with BlockmodelSearchResult {
   // LNS search procedure
 
   var nbFail = conf.nbFail()
-  var α = 0.05
+  var α = conf.alpha()
   val random = conf.seed.toOption match {
     case Some(i) => new Random(i)
     case None => new Random()
@@ -95,16 +96,15 @@ object RunLNS extends App with BlockmodelSearchResult {
   val maxFailedRuns = conf.failedRuns()
   val maxNbRestarts = conf.restarts()
 
-  def getTimeLeft(): Int = (getTimeBudget - ((System.currentTimeMillis() - startTime)/1000)).toInt
-
+  private def getTimeLeft: Int = (getTimeBudget - ((System.currentTimeMillis() - startTime)/1000)).toInt
 
   var nbRestarts = 0
-  while (getTimeLeft() > 0 && nbRestarts < maxNbRestarts) {
+  while (getTimeLeft > 0 && nbRestarts < maxNbRestarts) {
     nbRestarts += 1
     val model = new Model()
 
     if (verbose) println("looking for initial solution")
-    val stats = model.solver.startSubjectTo(nSols = 1, timeLimit = getTimeLeft()) {
+    val stats = model.solver.startSubjectTo(nSols = 1, timeLimit = getTimeLeft) {
       if (conf.goodFirstSol.getOrElse(false)) {
         model.solver.search({
           val h = new VertexDistanceHeuristic(model.C, model.k, g)
@@ -129,23 +129,28 @@ object RunLNS extends App with BlockmodelSearchResult {
     // try to improve on this initial solution
     var runNb = 0
     var runsSinceLastSolution = 0
-    while (getTimeLeft() > 0 && runsSinceLastSolution < maxFailedRuns) {
+    while (getTimeLeft > 0 && runsSinceLastSolution < maxFailedRuns) {
       runNb += 1
       runsSinceLastSolution += 1
       val bestCost = getSolution.get.cost(g)
       val localBestCost = localBest.cost(g)
-      if (verbose) println(s"restart $nbRestarts/$maxNbRestarts, $runsSinceLastSolution/$maxFailedRuns failed runs, best:$localBestCost (global:$bestCost), ${getTimeLeft() / 60}mins left, relaxing ${(α * 100).toInt}%, max $nbFail failed nodes")
+      if (verbose) println(s"restart $nbRestarts/$maxNbRestarts, $runsSinceLastSolution/$maxFailedRuns failed runs, best:$localBestCost (global:$bestCost), ${getTimeLeft / 60}mins left, relaxing ${(α * 100).toInt}%, max $nbFail failed nodes")
       // run using the max Cost Delta heuristic and a limit on the number of failed states
       // randomly relaxing α% of the variables
-      val stats = model.solver.startSubjectTo(failureLimit = nbFail, timeLimit = getTimeLeft()) {
+      val stats = model.solver.startSubjectTo(failureLimit = nbFail, timeLimit = getTimeLeft) {
         model.solver.search(
-          conflictOrderingSearch(model.C, model.blockmodelConstraint.sumCostDelta(_)+random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
+          conflictOrderingSearch(model.C, model.blockmodelConstraint.sumCostDelta(_) + random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
             binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
         )
         model.solver.add(model.totalCost < localBestCost)
         // relax randomly α% of the C variables
         val bestC = localBest.C
-        model.solver.add((0 until g.n).filter(i => random.nextFloat() > α).map(i => model.C(i) === bestC(i)))
+        //model.solver.add((0 until g.n).filter(i => random.nextFloat() > α).map(i => model.C(i) === bestC(i)))
+        val costs = localBest.costOfVertices(g)
+        val total = costs.sum
+        val selec = (0 until g.n).filter(i => random.nextFloat() > 0.1 * α + 0.9 * α * g.n * costs(i).toDouble / total)
+        model.solver.add(selec
+          .map(i => model.C(i) === bestC(i)))
       }
       // if a solution is found, print the stats
       if (stats.nSols > 0) {
@@ -153,8 +158,8 @@ object RunLNS extends App with BlockmodelSearchResult {
         localBest = model.bestBM.get
         if (verbose) println(stats)
       }
-      if (stats.completed) α = math.min(1.0, α*1.1)
-      else α = math.max(0.01, α/1.1)
+      if (stats.completed) α = math.min(1.0, α*1.21)
+      else α = math.max(conf.alpha(), α/1.1)
     }
     if (verbose) println("restarting")
   }
