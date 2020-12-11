@@ -1,7 +1,7 @@
 package blockmodel.constraints
 
 import blockmodel.utils.Digraph
-import oscar.algo.reversible.ReversibleInt
+import oscar.algo.reversible.{ReversibleInt, ReversibleSparseSet}
 import oscar.cp.Constraint
 import oscar.cp.core.CPPropagStrength
 import oscar.cp.core.delta.DeltaIntVar
@@ -11,6 +11,7 @@ class OnesInSubmatrix(n: CPIntVar, X: Digraph, C: Array[CPIntVar], row: Int, col
 extends Constraint(C(0).store){
 
   val CDeltas: Array[DeltaIntVar] = Array.ofDim(C.length)
+  val possibleVars = new ReversibleSparseSet(s, 0, X.n-1)
   val rowMin: Array[ReversibleInt] = Array.fill(X.n)(new ReversibleInt(s, 0))
   val rowMax: Array[ReversibleInt] = Array.fill(X.n)(new ReversibleInt(s, X.e))
   val colMin: Array[ReversibleInt] = Array.fill(X.n)(new ReversibleInt(s, 0))
@@ -24,7 +25,6 @@ extends Constraint(C(0).store){
   override def associatedVars(): Iterable[CPVar] = ???
 
   def count(): Unit = {
-    // todo replace this by an incremental count based on the deltas
     for (i <- 0 until X.n if C(i) hasValue row) {
       rowMax(i) := (0 until X.n).count(j => (row==col || i!=j) && X(i, j) && C(j).hasValue(col))
       rowMin(i) := (0 until X.n).count(j => (row==col || i!=j) && X(i, j) && C(j).isBoundTo(col))
@@ -67,12 +67,53 @@ extends Constraint(C(0).store){
 
     // register
     n.callPropagateWhenBoundsChange(this)
-    for (i <- C.indices if C(i).hasValue(row) || C(i).hasValue(col))
-      CDeltas(i) = C(i).callPropagateOnChangesWithDelta(this)
+    for (i <- C.indices) {
+      if (!C(i).isBound && (C(i).hasValue(row) || C(i).hasValue(col))) {
+        CDeltas(i) = C(i).callPropagateOnChangesWithDelta(this)
+      } else {
+        possibleVars.removeValue(i)
+      }
+    }
   }
 
   override def propagate(): Unit = {
-    count()
+    // todo work in progress version
+    var idx = possibleVars.size
+    while(idx > 0) {
+      idx -= 1
+      val x = possibleVars(idx)
+      val variable = C(x)
+      val delta = CDeltas(x)
+      // check which values have been removed (row, col or both)
+      for(v <- delta.values) {
+        if (v == row)
+          for (i <- 0 until X.n if X(x, i)) {
+            colMax(i) -= 1
+            nmax -= 1
+          }
+        // todo check row==col case
+        if (v == col) for (i <- possibleVars if X(i, x)) {
+          rowMax(i) -= 1
+          nmax -= 1
+        }
+      }
+      if (variable.isBoundTo(row)) {
+        for (i <- possibleVars if X(x, i)) colMin(i) += 1
+        for (i <- 0 until X.n if C(i).isBoundTo(col) && X(x,i)) nmin -= 1
+      } // todo check row==col case
+      if (variable.isBoundTo(col)) {
+        for (i <- possibleVars if X(i, x)) rowMin(i) += 1
+        for (i <- 0 until X.n if C(i).isBoundTo(row) && X(i,x)) nmin -= 1
+      }
+
+      if (variable.isBound || (!variable.hasValue(row) && !variable.hasValue(col)))
+        possibleVars.removeValue(idx)
+    }
+
+    // todo update nmin and nmax
+
+    // todo replace this by an incremental count based on the deltas
+    //count()
     // todo we can do more pruning if there is only one vertex left unbound
     if (row != col) {
       for (i <- 0 until X.n if !C(i).isBound && (C(i) hasValue row)) {

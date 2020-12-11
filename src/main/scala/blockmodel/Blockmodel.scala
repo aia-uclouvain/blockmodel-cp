@@ -128,18 +128,19 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
   }
 
   // returns an image equivalent to toStringGrouped, with clusters separated by red lines and ties shown as black pixels
-  def toImageGrouped(g: Digraph): BufferedImage = {
-    val size = g.n + k
+  def toImageGrouped(g: Digraph, scale:Int = 1): BufferedImage = {
+    val s = (g.n + k)
+    val size = scale * s
     val img = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB)
     val white = Color.WHITE.getRGB
     val red   = Color.RED.getRGB
     val black = Color.BLACK.getRGB
 
-    val groupedVertices = (0 to C.max).map(r => C.indices.filter(C(_) == r))
+    val groupedVertices = (0 until k).map(r => C.indices.filter(C(_) == r))
     var pixels = List[Int]()
     for (group <- groupedVertices) {
       // horizontal separator
-      pixels ++= List.fill(size)(red)
+      pixels ++= List.fill(s)(red)
       for (i <- group) {
         // fill the line for vertex i
         for (group2 <- groupedVertices) {
@@ -152,7 +153,7 @@ class Blockmodel(val C: Array[Int], val M: Array[Array[Boolean]]){
       }
     }
     for(x <- 0 until size; y <- 0 until size)
-      img.setRGB(x, y, pixels(y+x*size))
+      img.setRGB(x, y, pixels( (x/scale) + (y/scale)*s) )
     img
   }
 }
@@ -246,6 +247,36 @@ object Blockmodel {
       nb1 > (cluster(c).length * cluster(d).length)-nb1
     })
 
+    new Blockmodel(C, M)
+  }
+
+  def fromToulbar2Solution(sol: String): Blockmodel = {
+    // tokens are of the for varname=value, separated by spaces. for example x0=4 x1=0 x2=4 x3=4
+    val tokens = sol.split(" ")
+      .filter(_.contains("=")) //remove empty tokens
+      .map(_.split("=")) // split on =
+      .map(a => (a(0), a(1).toInt)) // transform value to int
+
+    val k = 1 + tokens.map(_._2).max
+    val n = 1 + tokens.map(_._1).filter(_.startsWith("x")).map(_.substring(1).toInt).max
+
+    val M = Array.fill(k,k)(false)
+    val C = Array.fill(n)(k)
+
+    for((name, value) <- tokens) {
+      if (name.startsWith("M")) {
+        println(s"processing $name = $value")
+        val x = name.split("_")
+        val cluster1 = x(1).toInt
+        val cluster2 = x(2).toInt
+        M(cluster1)(cluster2) = value > 0
+      }
+      else if(name.startsWith("x")) {
+        println(s"processing $name = $value")
+        val i = name.substring(1).toInt
+        C(i) = value
+      }
+    }
     new Blockmodel(C, M)
   }
 

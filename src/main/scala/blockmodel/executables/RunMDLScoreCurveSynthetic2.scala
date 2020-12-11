@@ -63,7 +63,7 @@ object RunMDLScoreCurveSynthetic2 extends App {
           PermutationBreakingBranching(C, blockmodelConstraint.maxCostDelta, blockmodelConstraint.delta(_, _)) ++ binaryMaxWeightedDegree(M.flatten.asInstanceOf[Array[CPIntVar]])
         }
         onSolution {
-          bestBM = Some(getBlockmodel())
+          bestBM = Some(getBlockmodel)
           bestCost = Some(totalCost.value)
         }
         solver.silent = true

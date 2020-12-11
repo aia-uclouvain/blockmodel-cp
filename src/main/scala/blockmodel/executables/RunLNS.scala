@@ -8,6 +8,8 @@ import blockmodel.{Blockmodel, BlockmodelCPModel}
 import javax.imageio.ImageIO
 import org.rogach.scallop.ScallopConf
 import oscar.cp._
+import oscar.util.selectMin
+
 import scala.util.Random
 
 /**
@@ -29,11 +31,13 @@ object RunLNS extends App with BlockmodelSearchResult {
       descr = "Max number of consecutive failed runs before a restart")
     val alpha = opt[Double](required = false, default = Some(0.05), validate = 0<_,
       descr = "Initial relaxation factor alpha. This is the initial fraction of vertices being relaxed")
+    val adaptative = opt[Boolean](required = false, descr = "if this is set, the alpha value will be changed " +
+      "dynamically during the search")
     val seed = opt[Int](required = false,
       descr = "Seed for the random number generator")
     val output = opt[String](required = true, descr = "File in which statistics about the search will be written, in " +
       "JSON format.")
-    val visual = opt[Boolean](required = false, descr = "If this is set, an image of the resulting block model will" +
+    val image = opt[Boolean](required = false, descr = "If this is set, an image of the resulting block model will" +
       " be generated, and saved to [output].gif")
     val time = opt[Int](required = false, default = Some(60), descr = "Time budget for the solver in seconds.",
       validate = 1<=_)
@@ -68,10 +72,16 @@ object RunLNS extends App with BlockmodelSearchResult {
 
   class Model extends BlockmodelCPModel(g, getK) {
     var bestBM: Option[Blockmodel] = None
-    minimize(totalCost)
+    minimize(totalCost) search {
+      if (! C.areBound) symmetryBreakingBranchingIdx(C, minDom(C), blockmodelConstraint.delta)
+      else M.flatten.find(!_.isBound) match {
+        case Some(x) => branch(add(x === x.getMin))(add(x !== x.getMin))
+        case None => noAlternative
+      }
+    }
     onSolution {
       bestBM = Some(getBlockmodel)
-      if (getSolution.isEmpty || getSolution.get.cost(g) > totalCost.value) {
+      if (getSolution.isEmpty || getScoreOfSolutions.last > totalCost.value) {
         val time = System.currentTimeMillis() - startTime
         getTimeOfSolutions :+= time
         getScoreOfSolutions :+= totalCost.value
@@ -80,7 +90,7 @@ object RunLNS extends App with BlockmodelSearchResult {
         if (verbose) {
           println("***")
           println(blockmodel)
-          println(cost.toStringMatrix)
+          //println(cost.toStringMatrix)
           println("totalcost is " + totalCost + " (" + (totalCost.value*100/n/n) + "%)")
         }
       }
@@ -107,10 +117,14 @@ object RunLNS extends App with BlockmodelSearchResult {
 
     if (verbose) println("looking for initial solution")
     val stats = model.solver.startSubjectTo(nSols = 1, timeLimit = getTimeLeft) {
-      model.solver.search(
+      /*model.solver.search(
+        /*
         conflictOrderingSearch(model.C, model.blockmodelConstraint.minCostDelta(_) + random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
           binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
-      )
+         */
+        binaryFirstFail(model.C) ++ binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
+
+      )*/
     }
 
     if (stats.nSols == 0) {
@@ -132,19 +146,27 @@ object RunLNS extends App with BlockmodelSearchResult {
       // run using the max Cost Delta heuristic and a limit on the number of failed states
       // randomly relaxing α% of the variables
       val stats = model.solver.startSubjectTo(failureLimit = nbFail, timeLimit = getTimeLeft) {
-        model.solver.search(
+        /*model.solver.search(
+          /*
           conflictOrderingSearch(model.C, model.blockmodelConstraint.sumCostDelta(_) + random.nextFloat(), model.blockmodelConstraint.smallestCostDelta(_)) ++
             binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
-        )
+           */
+          binaryFirstFail(model.C) ++ binaryIdx(model.M.flatten, model.blockmodelConstraint.MVarHeuris(_), model.blockmodelConstraint.MValHeuris(_))
+        )*/
         model.solver.add(model.totalCost < localBestCost)
         // relax randomly α% of the C variables
         val bestC = localBest.C
         //model.solver.add((0 until g.n).filter(i => random.nextFloat() > α).map(i => model.C(i) === bestC(i)))
+
+        /*
         val costs = localBest.costOfVertices(g)
         val total = costs.sum
         val selec = (0 until g.n).filter(i => random.nextFloat() > 0.1 * α + 0.9 * α * g.n * costs(i).toDouble / total)
-        model.solver.add(selec
-          .map(i => model.C(i) === bestC(i)))
+        model.solver.add(selec.map(i => model.C(i) === bestC(i)))
+         */
+
+        val selec = (0 until g.n).filter(i => random.nextFloat() > (0.1*α)+(0.9*α*g.n*costOfVertex(i,localBest.C,localBest.M)/localBestCost/2))
+        model.solver.add(selec.map(i => model.C(i) === bestC(i)))
       }
       // if a solution is found, print the stats
       if (stats.nSols > 0) {
@@ -152,8 +174,10 @@ object RunLNS extends App with BlockmodelSearchResult {
         localBest = model.bestBM.get
         if (verbose) println(stats)
       }
-      if (stats.completed) α = math.min(1.0, α*1.21)
-      else α = math.max(conf.alpha(), α/1.1)
+      if(conf.adaptative.getOrElse(false)) {
+        if (stats.completed) α = math.min(1.0, α * 1.21)
+        else α = math.max(conf.alpha(), α / 1.1)
+      }
     }
     if (verbose) println("restarting")
   }
@@ -168,7 +192,7 @@ object RunLNS extends App with BlockmodelSearchResult {
       println(s"Cost of the solution: $getScoreOfBest")
 
       if (g.n < 30) println(s.toStringGrouped(g))
-      if (conf.visual.getOrElse(false)) {
+      if (conf.image.getOrElse(false)) {
         println("generating image")
         ImageIO.write(s.toImageGrouped(g), "gif", new File("./out.gif"))
       }
@@ -183,6 +207,26 @@ object RunLNS extends App with BlockmodelSearchResult {
       storeJson()
     }
     case _ => {}
+  }
+
+  def symmetryBreakingBranchingIdx(variables: Array[CPIntVar], varHeuristic: Int => Int, valScore: (Int, Int) => Int)(implicit cp: CPSolver): Seq[Alternative] = {
+    // index of the unbound variable which is best according to varHeuristic
+    val bestIdx = selectMin(variables.indices)(!variables(_).isBound)(varHeuristic).get
+    val (used, unused) = variables(bestIdx).partition(value => variables.exists(_.isBoundTo(value)))
+    val allowedValues = if (unused.isEmpty) used.toIndexedSeq else used.toIndexedSeq :+ unused.head
+    val orderedValues = allowedValues.sortBy(valScore(bestIdx, _))
+    branchAll(orderedValues)(v => add(variables(bestIdx) === v))
+  }
+
+  def costOfVertex(v: Int, C: Array[Int], B: Array[Array[Boolean]]): Int = {
+    var sum = 0
+    var i = 0
+    while (i < g.n) {
+      if(g(v)(i) != B(C(v))(C(i))) sum += 1
+      if(g(i)(v) != B(C(i))(C(v))) sum += 1
+      i += 1
+    }
+    sum
   }
 
 

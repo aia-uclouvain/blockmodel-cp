@@ -1,13 +1,12 @@
 package blockmodel.constraints
 
 import oscar.algo.reversible.{ReversibleInt, ReversibleSparseSet}
-import oscar.algo.search
 import oscar.cp._
 import oscar.cp.core._
 import oscar.cp.core.delta.DeltaIntVar
 import oscar.cp.core.variables.CPVar
 
-import scala.math.{max, min}
+import scala.math.min
 
 /**
   * Global constraint for one-mode blockmodeling for structural equivalence. Given a directed graph described
@@ -28,8 +27,8 @@ import scala.math.{max, min}
   * @param totalCost CP variable representing the total reconstruction cost of the graph given the blockmodel described
   *                  by M and C.
   */
-class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Array[CPIntVar],
-                     cost: Array[Array[CPIntVar]], totalCost: CPIntVar)
+class BlockmodelCostPartial(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Array[CPIntVar],
+                            cost: Array[Array[CPIntVar]], totalCost: CPIntVar)
   extends Constraint(C(0).store, "BlockmodelCost") {
 
   var verbose: Boolean = false
@@ -86,33 +85,35 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
       if (C(i).isBound) {
         unboundVertices.removeValue(i)
         val r = C(i).value
-        // update the unbound counters
-        var y = unboundVertices.size - 1
-        while (y >= 0) {
-          val j = unboundVertices(y)
-          // a link i->j becomes a link r->j
-          if (X(i)(j)) nb1UnboundCol(r)(j) += 1
-          else nb0UnboundCol(r)(j) += 1
-          // a link j->i becomes a link j->r
-          if (X(j)(i)) nb1UnboundRow(j)(r) += 1
-          else nb0UnboundRow(j)(r) += 1
+        if (r < k) { // here, we exclude vertices bound to >=k, as they do not fall in this blockmodel
+          // update the unbound counters
+          var y = unboundVertices.size - 1
+          while (y >= 0) {
+            val j = unboundVertices(y)
+            // a link i->j becomes a link r->j
+            if (X(i)(j)) nb1UnboundCol(r)(j) += 1
+            else nb0UnboundCol(r)(j) += 1
+            // a link j->i becomes a link j->r
+            if (X(j)(i)) nb1UnboundRow(j)(r) += 1
+            else nb0UnboundRow(j)(r) += 1
 
-          y -= 1
-        }
-        // update the bound counters
-        var s = 0
-        while (s < k) {
-          // for the row r, we add the rows
-          nb0Bound(r)(s) += nb0UnboundRow(i)(s)
-          nb1Bound(r)(s) += nb1UnboundRow(i)(s)
-          // for the column r, we add the columns
-          nb0Bound(s)(r) += nb0UnboundCol(s)(i)
-          nb1Bound(s)(r) += nb1UnboundCol(s)(i)
-          s += 1
-        }
+            y -= 1
+          }
+          // update the bound counters
+          var s = 0
+          while (s < k) {
+            // for the row r, we add the rows
+            nb0Bound(r)(s) += nb0UnboundRow(i)(s)
+            nb1Bound(r)(s) += nb1UnboundRow(i)(s)
+            // for the column r, we add the columns
+            nb0Bound(s)(r) += nb0UnboundCol(s)(i)
+            nb1Bound(s)(r) += nb1UnboundCol(s)(i)
+            s += 1
+          }
 
-        if (X(i)(i)) nb1Bound(r)(r) += 1
-        else nb0Bound(r)(r) += 1
+          if (X(i)(i)) nb1Bound(r)(r) += 1
+          else nb0Bound(r)(r) += 1
+        }
       }
       x -= 1
     }
@@ -142,30 +143,32 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
       val i = unboundVertices(x)
       var r = 0
       while (r < k) {
-        if (C(i).forall(M(_)(r) isBoundTo 0)) { // if this row can only go to a 0 block, we add the number of 1
-          if (verbose) println(s"the row from C$i to cluster $r will always fall in a null block, so we add the number of 1s = ${nb1UnboundRow(i)(r)}")
-          minTotalCost += nb1UnboundRow(i)(r)
-        }
-        else if (C(i).forall(M(_)(r) isBoundTo 1)) { // and if it can only go to a 1 block, the number of 0
-          if (verbose) println(s"the row from C$i to cluster $r will always fall in a full block, so we add the number of 0s = ${nb0UnboundRow(i)(r)}")
-          minTotalCost += nb0UnboundRow(i)(r)
-        }
-        else  { // otherwise the min is a safe bet
-          if (verbose && min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r)) > 0) println(s"vertex $i row $r will always cost at least ${min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))}")
-          minTotalCost += min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))
-        }
-        // same thing for the columns
-        if (C(i).forall(M(r)(_).isBoundTo(0))) {
-          if (verbose) println(s"the col from cluster $r to C$i will always fall in a null block, so we add the number of 1s = ${nb1UnboundCol(r)(i)}")
-          minTotalCost += nb1UnboundCol(r)(i)
-        }
-        else if (C(i).forall(M(r)(_).isBoundTo(1))) {
-          if (verbose) println(s"the col from cluster $r to C$i will always fall in a full block, so we add the number of 0s = ${nb0UnboundCol(r)(i)}")
-          minTotalCost += nb0UnboundCol(r)(i)
-        }
-        else  {
-          if (verbose && min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i)) > 0) println(s"vertex $i col $r will always cost at least ${min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))}")
-          minTotalCost += min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))
+        if (C(i).max < k) { // otherwise the vertex could be excluded all together
+          if (C(i).forall(M(_)(r) isBoundTo 0)) { // if this row can only go to a 0 block, we add the number of 1
+            if (verbose) println(s"the row from C$i to cluster $r will always fall in a null block, so we add the number of 1s = ${nb1UnboundRow(i)(r)}")
+            minTotalCost += nb1UnboundRow(i)(r)
+          }
+          else if (C(i).forall(M(_)(r) isBoundTo 1)) { // and if it can only go to a 1 block, the number of 0
+            if (verbose) println(s"the row from C$i to cluster $r will always fall in a full block, so we add the number of 0s = ${nb0UnboundRow(i)(r)}")
+            minTotalCost += nb0UnboundRow(i)(r)
+          }
+          else { // otherwise the min is a safe bet
+            if (verbose && min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r)) > 0) println(s"vertex $i row $r will always cost at least ${min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))}")
+            minTotalCost += min(nb0UnboundRow(i)(r), nb1UnboundRow(i)(r))
+          }
+          // same thing for the columns
+          if (C(i).forall(M(r)(_).isBoundTo(0))) {
+            if (verbose) println(s"the col from cluster $r to C$i will always fall in a null block, so we add the number of 1s = ${nb1UnboundCol(r)(i)}")
+            minTotalCost += nb1UnboundCol(r)(i)
+          }
+          else if (C(i).forall(M(r)(_).isBoundTo(1))) {
+            if (verbose) println(s"the col from cluster $r to C$i will always fall in a full block, so we add the number of 0s = ${nb0UnboundCol(r)(i)}")
+            minTotalCost += nb0UnboundCol(r)(i)
+          }
+          else {
+            if (verbose && min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i)) > 0) println(s"vertex $i col $r will always cost at least ${min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))}")
+            minTotalCost += min(nb0UnboundCol(r)(i), nb1UnboundCol(r)(i))
+          }
         }
         r += 1
       }
@@ -204,7 +207,7 @@ class BlockmodelCost(X: Array[Array[Boolean]], M: Array[Array[CPBoolVar]], C: Ar
     var x = 0
     while (x < unboundVertices.size) {
       val i = unboundVertices(x)
-      val domain = C(i).toArray
+      val domain = C(i).filter(_<k).toArray
       var y = 0
       while (y < domain.length) {
         val r = domain(y)
