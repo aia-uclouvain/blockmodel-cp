@@ -33,5 +33,5 @@ class BlockmodelCPModel(graph: Digraph, val k: Int) extends CPModel {
   /**
     * @return the blockmodel found by the search. fails if the search was not completed.
     */
-  def getBlockmodel: Blockmodel = new Blockmodel(C.map(_.value), M.map(_.map(_.isTrue)))
+  def getBlockmodel(): Blockmodel = new Blockmodel(C.map(_.value), M.map(_.map(_.isTrue)))
 }
